@@ -39,6 +39,9 @@ LUXE-Store/
 *   **Magnetic Vectors**: Springs interactive buttons organically toward mouse positions on hover.
 
 ### 3. Integrated Global Commerce Upgrade
+*   **VIP Member Dashboard & Secure Auth**: Full registration and authentication system with a slide-out drawer fetching your real-time SQLite order history and account details directly from the local Python backend.
+*   **3D Product Viewer (Interactive WebGL)**: Embedded `<model-viewer>` engine allowing users to toggle from standard 2D imagery into an interactive, zoomable, and rotatable 3D product view directly within the quick-view modal.
+*   **Advanced Algorithmic Filtering**: High-end two-column search layout featuring a draggable price scale and category checkboxes. Powered by custom GSAP stagger animations that instantly filter and render the active catalog.
 *   **Global Multicurrency Switcher**: A gold-trimmed selector in the navbar dropdown offering instantaneous conversions between **USD ($)**, **EUR (€)**, **INR (₹)**, and **GBP (£)**, recalculating catalog prices, active cart subtotals, wishlist drawers, and checkout calculations instantly. Saves your active currency in `localStorage`.
 *   **Product Review & Testimonial Engine**: A tabbed modal interface dividing Description from Reviews. Displays rating analytics summaries (e.g. *5.0 based on 2 reviews*), dynamic star inputs, user submissions forms, and pre-loaded premium customer history logs. Integrates with session-safe `localStorage`.
 *   **Location Auto-Fill (Simulated GPS)**: A gold **`Auto-Detect Current Location`** button in the checkout. When clicked, it activates a 1.2-second high-tech crosshair loading spin to simulate real-time satellite lookups, automatically filling delivery fields with a mock Milan fashion district location and alerting the user via gold toast banners.
