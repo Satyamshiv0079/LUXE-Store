@@ -411,6 +411,13 @@
         <span class="size-label">Select Size</span>
         <div class="size-options" id="modal-sizes"></div>
       </div>
+      
+      <!-- Size Stock Status Indicator -->
+      <div id="modal-stock-status-wrap" style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-ui); font-size: 0.72rem; margin-top: 0.8rem; margin-bottom: 1.2rem;">
+        <span class="status-dot" id="modal-stock-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #40c040; display: inline-block;"></span>
+        <span id="modal-stock-text" style="color: var(--muted);">In stock — Ready to ship global</span>
+      </div>
+
       <div class="modal-actions">
         <button class="btn-primary modal-add-cart" id="modal-add-cart"><i class="fa-solid fa-bag-shopping"></i> Add to Cart</button>
         <button class="btn-ghost modal-wishlist" id="modal-wishlist-btn"><i class="fa-regular fa-heart"></i></button>
@@ -419,6 +426,15 @@
         <div class="modal-meta-item"><i class="fa-solid fa-truck"></i> Free global shipping</div>
         <div class="modal-meta-item"><i class="fa-solid fa-rotate-left"></i> 30-day returns</div>
         <div class="modal-meta-item"><i class="fa-solid fa-shield-halved"></i> 2-year warranty</div>
+      </div>
+
+      <!-- Complete the Look Curation Panel -->
+      <div class="complete-look-box" style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem;">
+        <h4 style="font-family: var(--font-ui); font-size: 0.78rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 0.8rem;">Complete the Look</h4>
+        <div id="complete-look-products" style="display: flex; gap: 0.8rem;"></div>
+        <button type="button" id="add-look-bundle-btn" class="btn-ghost" style="width: 100%; margin-top: 0.8rem; font-size: 0.72rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border-color: var(--gold); color: var(--gold); cursor: none;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Add Bundled Look (-10% Discount)
+        </button>
       </div>
     </div>
   </div>
@@ -508,8 +524,33 @@
       <button id="promo-apply-btn" class="btn-primary" style="padding: 0.75rem 1.2rem; font-size: 0.78rem; white-space: nowrap; height: 100%;" type="button">Apply</button>
     </div>
 
+    <!-- Gift Option Box -->
+    <div class="gift-option-box" style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem;">
+      <label style="display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-ui); font-size: 0.78rem; color: var(--white); cursor: none;">
+        <input type="checkbox" id="gift-packaging-checkbox" style="accent-color: var(--gold); cursor: none;" />
+        <span>Add Signature LUXE Gift Packaging (+<span id="gift-price-display">$15</span>)</span>
+      </label>
+      
+      <div id="gift-details-panel" style="display: none; flex-direction: column; gap: 0.6rem; padding: 0.8rem 1rem; background: var(--bg-3); border-radius: var(--radius); border: 1px solid var(--border); margin-top: 0.4rem; animation: slideDown 0.3s ease;">
+        <div class="form-group" style="margin-bottom: 0.4rem; display: flex; flex-direction: column; gap: 0.2rem;">
+          <label for="gift-ribbon-select" style="font-family: var(--font-ui); font-size: 0.72rem; color: var(--gold);">Select Ribbon Color</label>
+          <select id="gift-ribbon-select" style="width: 100%; padding: 0.5rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: var(--font-ui); font-size: 0.75rem; outline: none; cursor: none;">
+            <option value="Archival Gold">Archival Gold</option>
+            <option value="Midnight Black">Midnight Black</option>
+            <option value="Satin White">Satin White</option>
+          </select>
+        </div>
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.2rem;">
+          <label for="gift-message-input" style="font-family: var(--font-ui); font-size: 0.72rem; color: var(--gold);">Handwritten Message</label>
+          <textarea id="gift-message-input" placeholder="Enter your card message here..." rows="2" style="width: 100%; padding: 0.5rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: var(--font-body); font-size: 0.75rem; outline: none; resize: none;"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkout Summary Box -->
     <div class="checkout-summary">
       <div class="checkout-summary-row"><span>Subtotal</span><span id="co-subtotal">$0.00</span></div>
+      <div class="checkout-summary-row" id="gift-summary-row" style="display: none;"><span>Gift Packaging</span><span class="text-gold" id="co-gift-price">+$15.00</span></div>
       <div class="checkout-summary-row" id="promo-discount-row" style="display: none;"><span>Discount (<span id="promo-discount-code" style="color: var(--gold); font-weight: 600;"></span>)</span><span class="text-gold" id="co-discount">-$0.00</span></div>
       <div class="checkout-summary-row"><span>Shipping</span><span class="text-gold">Free</span></div>
       <div class="checkout-summary-row checkout-total"><span>Total</span><span id="co-total">$0.00</span></div>
@@ -595,6 +636,7 @@
       <h2>Order Confirmed!</h2>
       <p class="success-order-num" id="success-order-num"></p>
       <p class="success-message">Thank you for shopping with LUXE. Your order will be delivered within 5–10 business days. A confirmation has been sent to your email.</p>
+      <p class="success-message" id="success-gift-note" style="display: none; color: var(--gold); font-family: var(--font-ui); font-size: 0.78rem; font-weight: 600; margin-top: 0.5rem;"></p>
       <div class="success-actions">
         <button class="btn-primary" onclick="closeCheckout()">Continue Shopping</button>
       </div>

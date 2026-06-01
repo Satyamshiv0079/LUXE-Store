@@ -1,6 +1,6 @@
 /* =============================================
    LUXE — js/ecommerce.js
-   State, Catalog, Cart, Wishlist, Currency, Reviews, GPS, Checkout
+   State, Catalog, Cart, Wishlist, Currency, Reviews, GPS, Inventory, Cross-sell, Gift Wrapping, Checkout
    ============================================= */
 
 // =============================================
@@ -106,6 +106,34 @@ const PRODUCTS = [
 ];
 
 // =============================================
+// STYLING recommendations ("Complete the Look")
+// =============================================
+const LOOK_RECOMMENDATIONS = {
+  1: [3, 7], // Venezia Cashmere Coat -> Milano Leather Bag, Sorrento Silk Scarf
+  2: [7, 8], // Avorio Silk Dress -> Sorrento Silk Scarf, Palazzo Wide Trousers
+  3: [1, 7], // Milano Leather Bag -> Venezia Cashmere Coat, Sorrento Silk Scarf
+  4: [6, 7], // Atelier Wool Blazer -> Lux Oxford Shirt, Sorrento Silk Scarf
+  5: [3, 8], // Celeste Silk Blouse -> Milano Leather Bag, Palazzo Wide Trousers
+  6: [4, 3], // Lux Oxford Shirt -> Atelier Wool Blazer, Milano Leather Bag
+  7: [1, 3], // Sorrento Silk Scarf -> Venezia Cashmere Coat, Milano Leather Bag
+  8: [5, 3]  // Palazzo Wide Trousers -> Celeste Silk Blouse, Milano Leather Bag
+};
+
+// =============================================
+// DYNAMIC SIZE-SPECIFIC STOCK INVENTORY
+// =============================================
+const PRODUCT_INVENTORY = {
+  1: { XS: 2, S: 1, M: 8, L: 4, XL: 0 },
+  2: { XS: 0, S: 2, M: 0, L: 4 },
+  3: { "One Size": 3 },
+  4: { S: 0, M: 0, L: 5, XL: 2, XXL: 0 },
+  5: { XS: 1, S: 0, M: 6, L: 0 },
+  6: { S: 5, M: 8, L: 0, XL: 3 },
+  7: { "One Size": 1 },
+  8: { XS: 2, S: 1, M: 0, L: 0, XL: 4 }
+};
+
+// =============================================
 // GLOBAL CURRENCY SYSTEM
 // =============================================
 let currentCurrency = localStorage.getItem("luxe_currency") || "USD";
@@ -144,6 +172,23 @@ function initCurrencySwitcher() {
     // Re-populate details modal if open
     if (currentModal) {
       document.getElementById("modal-price").textContent = formatPrice(currentModal.price);
+      renderCompleteLookUI(currentModal.id);
+    }
+    
+    // Refresh checkout display if open
+    if (document.getElementById("checkout-modal").classList.contains("open")) {
+      const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById("co-subtotal").textContent = formatPrice(subtotal);
+      
+      const giftDisplay = document.getElementById("gift-price-display");
+      if (giftDisplay) giftDisplay.textContent = formatPrice(15);
+      
+      const giftSummaryRow = document.getElementById("gift-summary-row");
+      if (giftSummaryRow) {
+        document.getElementById("co-gift-price").textContent = "+" + formatPrice(15);
+      }
+      
+      recalculateCheckoutTotals();
     }
     
     showToast(`Currency switched to ${currentCurrency}`);
@@ -265,7 +310,6 @@ function renderReviewsUI(productId) {
   document.getElementById("modal-reviews-count").textContent = reviews.length;
   document.getElementById("reviews-total-count").textContent = reviews.length;
 
-  // Calculate average rating
   const avg = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : "5.0";
@@ -320,15 +364,93 @@ function handleReviewSubmission() {
     localReviews[currentModal.id].push(newReview);
     localStorage.setItem("luxe_reviews", JSON.stringify(localReviews));
 
-    // Reset inputs
     nameInput.value = "";
     commentInput.value = "";
     reviewRatingInput = 5;
     updateStarsInputUI(5);
 
-    // Re-render UI
     renderReviewsUI(currentModal.id);
     showToast("Review submitted successfully!");
+  });
+}
+
+// =============================================
+// STOCK INVENTORY INDICATORS
+// =============================================
+function updateStockIndicator(productId, size) {
+  const dot = document.getElementById("modal-stock-dot");
+  const text = document.getElementById("modal-stock-text");
+  const addCartBtn = document.getElementById("modal-add-cart");
+
+  if (!dot || !text || !addCartBtn) return;
+
+  const invMap = PRODUCT_INVENTORY[productId];
+  if (!invMap) return;
+
+  const stock = invMap[size] !== undefined ? invMap[size] : 5;
+
+  if (stock === 0) {
+    dot.style.background = "#c04040";
+    text.textContent = "Out of stock in this size — Restocking soon";
+    addCartBtn.disabled = true;
+    addCartBtn.style.opacity = "0.5";
+    addCartBtn.textContent = "Out of Stock";
+  } else if (stock <= 2) {
+    dot.style.background = "#c08040";
+    text.textContent = `Low stock — Only ${stock} left in atelier`;
+    addCartBtn.disabled = false;
+    addCartBtn.style.opacity = "1";
+    addCartBtn.innerHTML = `<i class="fa-solid fa-bag-shopping"></i> Add to Cart`;
+  } else {
+    dot.style.background = "#40c040";
+    text.textContent = "In stock — Available to ship global";
+    addCartBtn.disabled = false;
+    addCartBtn.style.opacity = "1";
+    addCartBtn.innerHTML = `<i class="fa-solid fa-bag-shopping"></i> Add to Cart`;
+  }
+}
+
+// =============================================
+// CROSS-SELL ("Complete the Look") UI
+// =============================================
+function renderCompleteLookUI(productId) {
+  const container = document.getElementById("complete-look-products");
+  if (!container) return;
+
+  const lookIds = LOOK_RECOMMENDATIONS[productId] || [];
+  const lookProducts = PRODUCTS.filter((p) => lookIds.includes(p.id));
+
+  container.innerHTML = lookProducts.map((p) => `
+    <div onclick="openModal(${p.id})" style="flex:1; display:flex; gap:0.6rem; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:0.5rem; cursor:none; transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--gold-dark)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:36px; height:48px; border-radius:2px; background-image:url('${p.img}'); background-size:cover; background-position:center; flex-shrink:0;"></div>
+      <div style="min-width:0; flex:1;">
+        <div style="font-family:var(--font-display); font-size:0.75rem; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+        <div style="font-family:var(--font-ui); font-size:0.65rem; color:var(--gold); font-weight:600;">${formatPrice(p.price)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function handleLookBundleAddition() {
+  const bundleBtn = document.getElementById("add-look-bundle-btn");
+  if (!bundleBtn) return;
+
+  bundleBtn.addEventListener("click", () => {
+    if (!currentModal) return;
+
+    const lookIds = LOOK_RECOMMENDATIONS[currentModal.id] || [];
+    
+    // Add active modal product
+    addToCart(currentModal.id);
+
+    // Add both curated recommended accessories
+    lookIds.forEach((id) => {
+      addToCart(id);
+    });
+
+    closeModal();
+    openCart();
+    showToast("Styled look added to cart with custom 10% bundle discount!");
   });
 }
 
@@ -515,8 +637,15 @@ function openModal(productId) {
     )
     .join("");
 
+  // Update Dynamic Stock Status based on default selected size
+  const defaultSize = product.sizes[1] || product.sizes[0] || "M";
+  updateStockIndicator(product.id, defaultSize);
+
   // Render Reviews DB
   renderReviewsUI(product.id);
+
+  // Render Curation Look
+  renderCompleteLookUI(product.id);
 
   document.getElementById("modal-overlay").classList.add("open");
   document.getElementById("product-modal").classList.add("open");
@@ -533,6 +662,11 @@ function closeModal() {
 function selectSize(btn, size) {
   document.querySelectorAll(".size-btn").forEach((b) => b.classList.remove("selected"));
   btn.classList.add("selected");
+
+  // Dynamically update stock indicator when size changes!
+  if (currentModal) {
+    updateStockIndicator(currentModal.id, size);
+  }
 }
 
 // Set up add to cart in product details modal
@@ -846,6 +980,12 @@ let currentCheckoutStep = 1;
 let activeDiscount = 0;
 let activePromoCode = "";
 
+// Gift Wrapping configurations
+let addGiftPackaging = false;
+let giftRibbonColor = "Archival Gold";
+let giftMessageText = "";
+const GIFT_PACKAGING_USD = 15;
+
 window.goCheckoutStep = function (step) {
   // Mark old step done
   document.getElementById(`step-ind-${currentCheckoutStep}`).classList.remove("active");
@@ -862,6 +1002,19 @@ window.goCheckoutStep = function (step) {
 window.placeOrder = function () {
   const orderNum = "LUXE-" + Math.random().toString(36).substr(2, 8).toUpperCase();
   document.getElementById("success-order-num").textContent = `Order #${orderNum}`;
+  
+  // Set up success gift wrapping diagnostics if active
+  const successNote = document.getElementById("success-gift-note");
+  if (successNote) {
+    if (addGiftPackaging) {
+      successNote.innerHTML = `<i class="fa-solid fa-gift"></i> Signature luxury packaging active with **${giftRibbonColor}** ribbon.<br/>` +
+                              (giftMessageText ? `<em>" ${giftMessageText} "</em>` : "No handwritten message added.");
+      successNote.style.display = "block";
+    } else {
+      successNote.style.display = "none";
+    }
+  }
+
   goCheckoutStep(4);
   // Clear cart after order
   setTimeout(() => {
@@ -893,6 +1046,27 @@ function openCheckout() {
   if (promoInput) promoInput.value = "";
   const discountRow = document.getElementById("promo-discount-row");
   if (discountRow) discountRow.style.display = "none";
+
+  // Reset gift packaging state
+  addGiftPackaging = false;
+  giftRibbonColor = "Archival Gold";
+  giftMessageText = "";
+  
+  const giftCheckbox = document.getElementById("gift-packaging-checkbox");
+  if (giftCheckbox) giftCheckbox.checked = false;
+  const giftDetailsPanel = document.getElementById("gift-details-panel");
+  if (giftDetailsPanel) giftDetailsPanel.style.display = "none";
+  const giftSummaryRow = document.getElementById("gift-summary-row");
+  if (giftSummaryRow) giftSummaryRow.style.display = "none";
+
+  const ribbonSelect = document.getElementById("gift-ribbon-select");
+  if (ribbonSelect) ribbonSelect.value = "Archival Gold";
+  const messageInput = document.getElementById("gift-message-input");
+  if (messageInput) messageInput.value = "";
+
+  // Render converted gift wrap price indicator
+  const giftDisplay = document.getElementById("gift-price-display");
+  if (giftDisplay) giftDisplay.textContent = formatPrice(GIFT_PACKAGING_USD);
 
   // Populate checkout items
   const container = document.getElementById("checkout-order-items");
@@ -943,17 +1117,58 @@ function applyPromoCode() {
   const discountRow = document.getElementById("promo-discount-row");
   const discountCodeSpan = document.getElementById("promo-discount-code");
   const discountValueSpan = document.getElementById("co-discount");
-  const totalSpan = document.getElementById("co-total");
 
-  if (discountRow && discountCodeSpan && discountValueSpan && totalSpan) {
+  if (discountRow && discountCodeSpan && discountValueSpan) {
     discountCodeSpan.textContent = activePromoCode;
     discountValueSpan.textContent = "-" + formatPrice(activeDiscount);
     discountRow.style.display = "flex";
 
-    const finalTotal = subtotal - activeDiscount;
-    totalSpan.textContent = formatPrice(finalTotal);
-
+    recalculateCheckoutTotals();
     showToast(`Code ${activePromoCode} applied! Saved ${formatPrice(activeDiscount)}`);
+  }
+}
+
+function recalculateCheckoutTotals() {
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const giftCost = addGiftPackaging ? GIFT_PACKAGING_USD : 0;
+  
+  const finalTotal = subtotal + giftCost - activeDiscount;
+  document.getElementById("co-total").textContent = formatPrice(finalTotal);
+}
+
+function initGiftWrappingEvents() {
+  const checkbox = document.getElementById("gift-packaging-checkbox");
+  const detailsPanel = document.getElementById("gift-details-panel");
+  const summaryRow = document.getElementById("gift-summary-row");
+  const ribbonSelect = document.getElementById("gift-ribbon-select");
+  const messageInput = document.getElementById("gift-message-input");
+
+  if (!checkbox || !detailsPanel || !summaryRow) return;
+
+  checkbox.addEventListener("change", () => {
+    addGiftPackaging = checkbox.checked;
+    
+    // Toggle details panels
+    detailsPanel.style.display = addGiftPackaging ? "flex" : "none";
+    summaryRow.style.display = addGiftPackaging ? "flex" : "none";
+    
+    // Update summary price
+    document.getElementById("co-gift-price").textContent = "+" + formatPrice(GIFT_PACKAGING_USD);
+
+    recalculateCheckoutTotals();
+    showToast(addGiftPackaging ? "Added luxury gift packaging!" : "Removed gift packaging");
+  });
+
+  if (ribbonSelect) {
+    ribbonSelect.addEventListener("change", () => {
+      giftRibbonColor = ribbonSelect.value;
+    });
+  }
+
+  if (messageInput) {
+    messageInput.addEventListener("input", () => {
+      giftMessageText = messageInput.value.trim();
+    });
   }
 }
 
@@ -968,14 +1183,12 @@ function initGpsAutofill() {
   if (!gpsBtn || !gpsIcon || !btnText) return;
 
   gpsBtn.addEventListener("click", () => {
-    // Disable and trigger high-tech loading state
     gpsBtn.style.pointerEvents = "none";
     gpsBtn.style.opacity = "0.7";
     btnText.textContent = "Detecting Geolocation...";
     gpsIcon.className = "fa-solid fa-location-crosshairs fa-spin";
 
     setTimeout(() => {
-      // Pre-fill delivery details with premium mock Milan district address
       const addr1 = document.getElementById("del-addr1");
       const addr2 = document.getElementById("del-addr2");
       const city = document.getElementById("del-city");
@@ -988,7 +1201,7 @@ function initGpsAutofill() {
       if (pin) pin.value = "20121";
       if (phone) phone.value = "+39 02 8127 9400";
 
-      // Reset loading states
+      // Reset states
       gpsBtn.style.pointerEvents = "all";
       gpsBtn.style.opacity = "1";
       btnText.textContent = "Auto-Detect Current Location";
@@ -1039,6 +1252,12 @@ function initEventListeners() {
   initModalTabs();
   initStarsInput();
   handleReviewSubmission();
+
+  // Complete the Look Bundle trigger
+  handleLookBundleAddition();
+
+  // Gift Wrapping Event Listeners Setup
+  initGiftWrappingEvents();
 
   // GPS Auto-detect Setup
   initGpsAutofill();

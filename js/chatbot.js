@@ -34,7 +34,7 @@ const CHATBOT_CONFIG = {
 // GEMINI API — LIVE AI CHATBOT
 // =============================================
 // 🔑 PASTE YOUR NEW API KEY BETWEEN THE QUOTES BELOW:
-const GEMINI_API_KEY = "AIzaSyCsiCOCjsnNNkEmp81bJa8DK528Xw7U9ic";
+const GEMINI_API_KEY = "PASTE_YOUR_KEY_HERE";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const LUXE_SYSTEM_PROMPT = `You are LUXE AI — the intelligent assistant for LUXE, a premium luxury fashion brand. Be elegant, warm, helpful, and on-brand. Use luxury vocabulary but stay approachable.
@@ -81,7 +81,7 @@ async function callGeminiAPI(userMessage) {
   const customKey = localStorage.getItem("GEMINI_API_KEY") || "";
   const apiKeyToUse = customKey || GEMINI_API_KEY;
 
-  if (!apiKeyToUse || apiKeyToUse === "PASTE_YOUR_KEY_HERE" || apiKeyToUse.startsWith("PASTE") || apiKeyToUse === "AIzaSyCsiCOCjsnNNkEmp81bJa8DK528Xw7U9ic") {
+  if (!apiKeyToUse || apiKeyToUse === "PASTE_YOUR_KEY_HERE" || apiKeyToUse.startsWith("PASTE")) {
     if (!customKey) {
       console.warn("Gemini API key is not set or placeholder is active. Using local fallback.");
       return null;

@@ -45,6 +45,9 @@ LUXE-Store/
     *   `LUXE20`: Instantly applies a **20%** subtotal discount.
     *   `GOLD50`: Instantly applies a **50%** subtotal discount.
     *   Clears and resets cleanly when checkout panels are closed or re-opened.
+*   **"Complete the Look" Styling Recommendations (Cross-Sell Engine)**: Curation grid inside the Quick-View modal presenting curated accessory pairings. Allows quick-view switching by clicking matches, or single-click addition of the entire styled bundle to the cart with an integrated **10% discount**.
+*   **Signature LUXE Gift Packaging & Handwritten Card (Commerce Upgrade)**: Checkout Step 1 selection (+$15 USD dynamically converted based on active currency), sliding color-coded ribbon picker (Midnight Black, Archival Gold, Satin White), and card message textarea. Recalculates subtotal/total summaries and details active packaging inside success receipts.
+*   **Dynamic Size-Specific Stock Alerts (UI/UX Upgrade)**: Live size-bound inventory tracking inside the details modal. Selecting different sizes dynamically updates a pulsing stock status indicator (e.g. orange for *Low Stock*, red for *Out of Stock*, green for *In Stock*) and auto-disables buttons with luxury strikethrough states.
 
 ### 4. Interactive Concierge AI
 *   **Dual-Engine Selector**: Slide-up settings dashboard to toggle between Google's **Gemini 1.5 Flash** cloud model or a custom, locally-hosted **NovaMind** Flask server.
