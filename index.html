@@ -450,8 +450,16 @@
   <div class="checkout-step-content active" id="checkout-step-1">
     <h2 class="checkout-title">Review Your Order</h2>
     <div class="checkout-order-items" id="checkout-order-items"></div>
+    
+    <!-- Promo Code Entry -->
+    <div class="promo-code-row" style="display: flex; gap: 0.6rem; margin: 1.2rem 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+      <input type="text" id="promo-input" placeholder="Enter promo code (e.g., LUXE20)" style="flex: 1; padding: 0.75rem 0.8rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: var(--font-ui); font-size: 0.8rem; outline: none; transition: border-color 0.3s;" />
+      <button id="promo-apply-btn" class="btn-primary" style="padding: 0.75rem 1.2rem; font-size: 0.78rem; white-space: nowrap; height: 100%;" type="button">Apply</button>
+    </div>
+
     <div class="checkout-summary">
       <div class="checkout-summary-row"><span>Subtotal</span><span id="co-subtotal">$0.00</span></div>
+      <div class="checkout-summary-row" id="promo-discount-row" style="display: none;"><span>Discount (<span id="promo-discount-code" style="color: var(--gold); font-weight: 600;"></span>)</span><span class="text-gold" id="co-discount">-$0.00</span></div>
       <div class="checkout-summary-row"><span>Shipping</span><span class="text-gold">Free</span></div>
       <div class="checkout-summary-row checkout-total"><span>Total</span><span id="co-total">$0.00</span></div>
     </div>

@@ -650,7 +650,18 @@ window.closeCheckout = function () {
   document.getElementById("checkout-step-1").classList.add("active");
 };
 
+let activeDiscount = 0;
+let activePromoCode = "";
+
 function openCheckout() {
+  // Reset promo state on checkout open
+  activeDiscount = 0;
+  activePromoCode = "";
+  const promoInput = document.getElementById("promo-input");
+  if (promoInput) promoInput.value = "";
+  const discountRow = document.getElementById("promo-discount-row");
+  if (discountRow) discountRow.style.display = "none";
+
   // Populate checkout items
   const container = document.getElementById("checkout-order-items");
   container.innerHTML = cart.map((item) => `
@@ -671,6 +682,47 @@ function openCheckout() {
   document.getElementById("checkout-overlay").classList.add("open");
   document.getElementById("checkout-modal").classList.add("open");
   document.body.classList.add("locked");
+}
+
+function applyPromoCode() {
+  const input = document.getElementById("promo-input");
+  if (!input) return;
+  const code = input.value.trim().toUpperCase();
+
+  if (!code) {
+    showToast("Please enter a promo code");
+    return;
+  }
+
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  if (code === "LUXE20") {
+    activeDiscount = subtotal * 0.20;
+    activePromoCode = "LUXE20";
+  } else if (code === "GOLD50") {
+    activeDiscount = subtotal * 0.50;
+    activePromoCode = "GOLD50";
+  } else {
+    showToast("Invalid promo code");
+    return;
+  }
+
+  // Update UI elements
+  const discountRow = document.getElementById("promo-discount-row");
+  const discountCodeSpan = document.getElementById("promo-discount-code");
+  const discountValueSpan = document.getElementById("co-discount");
+  const totalSpan = document.getElementById("co-total");
+
+  if (discountRow && discountCodeSpan && discountValueSpan && totalSpan) {
+    discountCodeSpan.textContent = activePromoCode;
+    discountValueSpan.textContent = "-$" + activeDiscount.toLocaleString("en-US", { minimumFractionDigits: 2 });
+    discountRow.style.display = "flex";
+
+    const finalTotal = subtotal - activeDiscount;
+    totalSpan.textContent = "$" + finalTotal.toLocaleString("en-US", { minimumFractionDigits: 2 });
+
+    showToast(`Code ${activePromoCode} applied! Saved $${activeDiscount.toLocaleString()}`);
+  }
 }
 
 function initPaymentOptions() {
@@ -710,6 +762,9 @@ function initEventListeners() {
   document.getElementById("checkout-btn")?.addEventListener("click", openCheckout);
   document.getElementById("checkout-close")?.addEventListener("click", closeCheckout);
   document.getElementById("checkout-overlay")?.addEventListener("click", closeCheckout);
+
+  // Promo Code
+  document.getElementById("promo-apply-btn")?.addEventListener("click", applyPromoCode);
 
   // Cart
   document.getElementById("cart-btn").addEventListener("click", openCart);
