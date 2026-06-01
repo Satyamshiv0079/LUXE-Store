@@ -16,7 +16,7 @@ LUXE-Store/
 │   └── style.css             # Unified dark luxury styling & structural layouts
 ├── js/
 │   ├── animations.js         # GSAP ScrollTriggers, Lenis smooth scrolling, cursors, mobile nav
-│   ├── ecommerce.js          # Cart and wishlist persistent state, product details, checkout forms
+│   ├── ecommerce.js          # Cart, wishlist, currency, reviews, location state, and checkout
 │   └── chatbot.js            # Dual-mode AI panel (Gemini API / NovaMind API), concierge parser
 ├── index.html                # Immersive HTML entrance
 └── README.md                 # Project documentation
@@ -37,17 +37,17 @@ LUXE-Store/
 *   **Scroll-Bound Counters**: Viewport-triggered statistics counters counting up dynamically to brand metrics.
 *   **Magnetic Vectors**: Springs interactive buttons organically toward mouse positions on hover.
 
-### 3. State & Commerce Management (Vanilla JS)
-*   **Persistent Wishlist**: Wishlist storage backed by browser `localStorage` to save catalog selections and move them to checkout.
-*   **Shopping Cart State**: Fully reactive shopping cart arrays recalculating subtotals, showing visual drawer lists, and animating navigation count badges.
-*   **4-Step Checkout Flow**:
-    1.  *Review*: Item summary, quantities, and calculation reviews.
-    2.  *Delivery*: Contact info, address validation, and PIN codes.
-    3.  *Payment*: Direct card parsing (with automatic 16-digit spacing and MM/YY slash masking), secure UPI options, or Cash on Delivery.
-    4.  *Confirmation*: Instantly generates a unique confirmation receipt ID (`LUXE-XXXXXX`).
+### 3. Integrated Global Commerce Upgrade
+*   **Global Multicurrency Switcher**: A gold-trimmed selector in the navbar dropdown offering instantaneous conversions between **USD ($)**, **EUR (€)**, **INR (₹)**, and **GBP (£)**, recalculating catalog prices, active cart subtotals, wishlist drawers, and checkout calculations instantly. Saves your active currency in `localStorage`.
+*   **Product Review & Testimonial Engine**: A tabbed modal interface dividing Description from Reviews. Displays rating analytics summaries (e.g. *5.0 based on 2 reviews*), dynamic star inputs, user submissions forms, and pre-loaded premium customer history logs. Integrates with session-safe `localStorage`.
+*   **Location Auto-Fill (Simulated GPS)**: A gold **`Auto-Detect Current Location`** button in the checkout. When clicked, it activates a 1.2-second high-tech crosshair loading spin to simulate real-time satellite lookups, automatically filling delivery fields with a mock Milan fashion district location and alerting the user via gold toast banners.
+*   **Promo Discount Engine**: Supports case-insensitive coupon entries in Checkout Step 1. Codes:
+    *   `LUXE20`: Instantly applies a **20%** subtotal discount.
+    *   `GOLD50`: Instantly applies a **50%** subtotal discount.
+    *   Clears and resets cleanly when checkout panels are closed or re-opened.
 
 ### 4. Interactive Concierge AI
-*   **Dual-Engine Selector**: Slide-upsettings dashboard to toggle between Google's **Gemini 1.5 Flash** cloud model or a custom, locally-hosted **NovaMind** Flask server.
+*   **Dual-Engine Selector**: Slide-up settings dashboard to toggle between Google's **Gemini 1.5 Flash** cloud model or a custom, locally-hosted **NovaMind** Flask server.
 *   **Secure API Manager**: Secured local storage (`localStorage`) locker to save Gemini API keys and local authorization tokens.
 *   **Concierge Command Interceptor**: Intercepts structural actions inside conversational text (e.g. `[ACTION: ADD_TO_CART, ID: 2]`) to trigger browser cart drawers, load modals, and complete purchases on the user's screen.
 *   **Offline Fallback Mode**: High-fidelity local keyword parser acting as a fallback to address support inquiries when API servers are offline.
@@ -87,7 +87,7 @@ Open your browser and navigate to:
 Houses all motion initializers, loader triggers, scrolling triggers, and hover listeners. It has zero external dependencies other than GSAP, ScrollTrigger, and Lenis.
 
 ### `js/ecommerce.js`
-Maintains catalog variables, persistent local storage, product quick-view panels, and card formatting loops. It works elastically with visual elements.
+Maintains catalog variables, persistent local storage, product quick-view panels, currency switchers, review forms, GPS auto-fills, and checkout formatting loops. It works elastically with visual elements.
 
 ### `js/chatbot.js`
 Interprets server APIs, formats chat logs, sets up local fallbacks, executes concierge overrides, and houses the central `DOMContentLoaded` event listener which coordinates page loads.
