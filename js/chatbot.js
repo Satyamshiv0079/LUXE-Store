@@ -6,6 +6,9 @@
 // =============================================
 // CHATBOT — DUAL MODE CONFIG
 // =============================================
+let socket = null;
+let currentStreamBubble = null;
+
 const CHATBOT_CONFIG = {
   support: {
     greeting: "Hello! I'm your LUXE Support Assistant. How can I help you today?",
@@ -363,6 +366,65 @@ function initChatbot() {
     document.getElementById("chatbot-settings-panel")?.classList.remove("open");
   });
 
+  // Socket.IO Init for Real-Time Streaming
+  if (typeof io !== 'undefined') {
+    socket = io("http://localhost:8000");
+    
+    socket.on('chat_start', (data) => {
+      removeTypingIndicator();
+      if (data.session_id) localStorage.setItem("NOVAMIND_SESSION_ID", data.session_id);
+      
+      const messages = document.getElementById("chatbot-messages");
+      const bubbleWrapper = document.createElement("div");
+      bubbleWrapper.className = "chat-msg bot";
+      bubbleWrapper.innerHTML = `
+        <div class="msg-avatar"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:0.7rem;"></i></div>
+        <div>
+          <div class="chat-bubble stream-active"></div>
+        </div>
+      `;
+      messages.appendChild(bubbleWrapper);
+      currentStreamBubble = bubbleWrapper.querySelector('.chat-bubble');
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on('chat_chunk', (data) => {
+      if (currentStreamBubble) {
+        currentStreamBubble.innerHTML += data.chunk.replace(/\\n/g, "<br>");
+        const messages = document.getElementById("chatbot-messages");
+        messages.scrollTop = messages.scrollHeight;
+      }
+    });
+
+    socket.on('chat_complete', (data) => {
+      if (currentStreamBubble) {
+        currentStreamBubble.classList.remove('stream-active');
+        currentStreamBubble.innerHTML = data.response.replace(/\\*\\*(.*?)\\*\\*/g, "<strong>$1</strong>").replace(/\\n/g, "<br>");
+        currentStreamBubble = null;
+        isTyping = false;
+        
+        // Execute Action Tag if found
+        const actionRegex = /\\[ACTION:\\s*([A-Z_]+)(?:,\\s*ID:\\s*(\\d+))?\\]/i;
+        const match = data.response.match(actionRegex);
+        if (match) {
+          executeChatbotAction(match[1].toUpperCase(), match[2] ? parseInt(match[2], 10) : null);
+        }
+      } else {
+        // Fallback if no start event happened
+        removeTypingIndicator();
+        isTyping = false;
+        addBotMessage(data.response);
+      }
+    });
+
+    socket.on('error', (data) => {
+      console.error("Socket Error:", data);
+      removeTypingIndicator();
+      isTyping = false;
+      addBotMessage("Socket connection error.");
+    });
+  }
+
   // Mode toggle
   document.getElementById("mode-support").addEventListener("click", () => switchMode("support"));
   document.getElementById("mode-assistant").addEventListener("click", () => switchMode("assistant"));
@@ -502,8 +564,20 @@ async function processMessage(text) {
   const lower = text.toLowerCase();
   showTypingIndicator();
 
-  // Attempt live AI call based on active engine
   const activeEngine = localStorage.getItem("LUXE_AI_ENGINE") || "gemini";
+  
+  if (activeEngine === "novamind" && socket && socket.connected) {
+    // STREAMING VIA WEBSOCKETS!
+    let sessionId = localStorage.getItem("NOVAMIND_SESSION_ID") || "";
+    socket.emit('chat_message', {
+      message: text,
+      session_id: sessionId,
+      mode: chatMode === "support" ? "support_engine" : "novamind_ai"
+    });
+    return; // Stop here, events will handle the UI
+  }
+
+  // Fallback to HTTP for Gemini or if socket fails
   let reply = null;
   if (activeEngine === "gemini") {
     reply = await callGeminiAPI(text);

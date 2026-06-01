@@ -13,6 +13,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -69,6 +71,12 @@
   </div>
   <div class="nav-right">
     <div class="currency-select-wrap" style="position: relative; display: flex; align-items: center; margin-right: 0.5rem;">
+      <select id="lang-select" style="background: none; border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--gold); font-family: var(--font-ui); font-size: 0.72rem; padding: 0.35rem 0.5rem; outline: none; cursor: none; font-weight: 600; text-transform: uppercase; margin-right: 0.5rem;">
+        <option value="EN" style="background: var(--bg-2); color: var(--text);">EN</option>
+        <option value="FR" style="background: var(--bg-2); color: var(--text);">FR</option>
+        <option value="IT" style="background: var(--bg-2); color: var(--text);">IT</option>
+        <option value="JP" style="background: var(--bg-2); color: var(--text);">JP</option>
+      </select>
       <select id="currency-select" style="background: none; border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--gold); font-family: var(--font-ui); font-size: 0.72rem; padding: 0.35rem 0.5rem; outline: none; cursor: none; font-weight: 600; text-transform: uppercase;">
         <option value="USD" style="background: var(--bg-2); color: var(--text);">USD ($)</option>
         <option value="EUR" style="background: var(--bg-2); color: var(--text);">EUR (€)</option>
@@ -99,16 +107,16 @@
     <div class="hero-orb hero-orb-3"></div>
   </div>
   <div class="hero-content">
-    <div class="hero-eyebrow" data-reveal><span>Spring / Summer 2025</span></div>
+    <div class="hero-eyebrow" data-reveal><span data-i18n>Spring / Summer 2025</span></div>
     <h1 class="hero-title">
-      <span class="title-line">Where</span>
-      <span class="title-line title-italic">Desire</span>
-      <span class="title-line">Meets Design</span>
+      <span class="title-line" data-i18n>Where</span>
+      <span class="title-line title-italic" data-i18n>Desire</span>
+      <span class="title-line" data-i18n>Meets Design</span>
     </h1>
-    <p class="hero-subtitle" data-reveal>Curated luxury for those who demand more than ordinary.</p>
+    <p class="hero-subtitle" data-reveal data-i18n>Curated luxury for those who demand more than ordinary.</p>
     <div class="hero-actions" data-reveal>
-      <a href="#collections" class="btn-primary magnetic">Explore Collection</a>
-      <a href="#about" class="btn-ghost magnetic">Our Story <i class="fa-solid fa-arrow-right"></i></a>
+      <a href="#collections" class="btn-primary magnetic" data-i18n>Explore Collection</a>
+      <a href="#about" class="btn-ghost magnetic"><span data-i18n>Our Story</span> <i class="fa-solid fa-arrow-right"></i></a>
     </div>
   </div>
   <div class="hero-scroll-indicator">
@@ -513,7 +521,10 @@
     <div style="margin-bottom: 2rem;">
       <h4 style="color: var(--gold); font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem;">Welcome</h4>
       <p id="vip-user-name" style="font-size: 1.1rem; color: var(--white);">Guest</p>
-      <button class="btn-ghost" id="vip-logout-btn" style="margin-top: 1rem; padding: 0.4rem 0.8rem; font-size: 0.7rem;">Sign Out</button>
+      <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+        <button class="btn-ghost" id="vip-logout-btn" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Sign Out</button>
+        <button class="btn-primary" id="admin-portal-btn" style="display: none; padding: 0.4rem 0.8rem; font-size: 0.7rem;"><i class="fa-solid fa-lock"></i> Admin Portal</button>
+      </div>
     </div>
     
     <div style="margin-bottom: 1.5rem;">
@@ -524,6 +535,25 @@
     </div>
   </div>
 </aside>
+
+<!-- ADMIN MODAL -->
+<div class="cart-overlay" id="admin-overlay"></div>
+<div class="checkout-modal" id="admin-modal" style="max-width: 800px; height: 80vh; overflow-y: auto; background: var(--bg-2); border: 1px solid var(--gold);">
+  <button class="modal-close" id="admin-close"><i class="fa-solid fa-xmark"></i></button>
+  <div style="padding: 2rem;">
+    <h2 style="color: var(--gold); font-family: var(--font-ui); text-transform: uppercase; margin-bottom: 2rem;">Admin Dashboard</h2>
+    <div style="display: flex; gap: 2rem;">
+      <div style="flex: 1; border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius); background: var(--surface);">
+        <h4 style="margin-bottom: 1rem; color: var(--white);">Recent Orders</h4>
+        <div id="admin-orders-list" style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.8rem; color: var(--muted);">Loading...</div>
+      </div>
+      <div style="flex: 1; border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius); background: var(--surface);">
+        <h4 style="margin-bottom: 1rem; color: var(--white);">Registered Users</h4>
+        <div id="admin-users-list" style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.8rem; color: var(--muted);">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- CHECKOUT MODAL -->
 <div class="checkout-overlay" id="checkout-overlay"></div>

@@ -714,9 +714,9 @@ if (document.getElementById("modal-add-cart")) {
 // =============================================
 let wishlist = JSON.parse(localStorage.getItem("luxe_wishlist") || "[]");
 
-function toggleWishlist(productId) {
+async function toggleWishlist(productId) {
   const idx = wishlist.findIndex((id) => id === productId);
-  if (idx > -1) {
+  if (idx !== -1) {
     wishlist.splice(idx, 1);
     showToast("Removed from wishlist");
   } else {
@@ -725,6 +725,22 @@ function toggleWishlist(productId) {
   }
   localStorage.setItem("luxe_wishlist", JSON.stringify(wishlist));
   updateWishlistUI();
+
+  if (currentUser) {
+      try {
+          const token = localStorage.getItem("luxe_auth_token") || "";
+          await fetch(`http://localhost:8000/auth/wishlist?email=${encodeURIComponent(currentUser.email)}`, {
+              method: "POST",
+              headers: { 
+                  "Content-Type": "application/json",
+                  "Authorization": token.startsWith("Bearer") ? token : `Bearer ${token}` 
+              },
+              body: JSON.stringify({ wishlist })
+          });
+      } catch (e) {
+          console.error("Failed to sync wishlist", e);
+      }
+  }
 }
 
 function isWishlisted(productId) {
@@ -915,6 +931,19 @@ function initLogin() {
             updateLoginUI();
             closeLogin();
             showToast(`Welcome back, ${data.user.first_name}! ✨`);
+            
+            // Fetch wishlist
+            try {
+                const wRes = await fetch(`http://localhost:8000/auth/wishlist?email=${encodeURIComponent(currentUser.email)}`, {
+                    headers: { "Authorization": data.token.startsWith("Bearer") ? data.token : `Bearer ${data.token}` }
+                });
+                const wData = await wRes.json();
+                if (wData.success && wData.wishlist.length > 0) {
+                    wishlist = [...new Set([...wishlist, ...wData.wishlist])];
+                    localStorage.setItem("luxe_wishlist", JSON.stringify(wishlist));
+                    updateWishlistUI();
+                }
+            } catch (e) { console.error("Failed to fetch wishlist", e); }
         } else {
             showToast(data.error || "Login failed");
         }
@@ -971,6 +1000,9 @@ async function loadVIPOrders() {
                     </div>
                     <div style="font-size:0.75rem; color:var(--muted);">ETA: ${o.eta}</div>
                     ${o.details && o.details.subtotal ? `<div style="font-size:0.75rem; color:var(--white); margin-top:0.4rem;">Total: ${formatPrice(o.details.subtotal)}</div>` : ''}
+                    <div style="margin-top:0.8rem;">
+                        <a href="http://localhost:8000/download/invoice/${o.order_id}" target="_blank" style="font-size:0.7rem; color:var(--gold); border: 1px solid var(--gold); padding: 0.3rem 0.6rem; border-radius: 5px; text-decoration: none;">Download PDF Invoice <i class="fa-solid fa-download"></i></a>
+                    </div>
                 </div>
             `).join("");
         } else {
@@ -980,6 +1012,82 @@ async function loadVIPOrders() {
         console.error(e);
         list.innerHTML = `<p style="color:var(--gold); font-size:0.8rem;">Failed to load orders.</p>`;
     }
+    
+    // Toggle Admin Button
+    const adminBtn = document.getElementById("admin-portal-btn");
+    if (adminBtn) {
+        if (currentUser.email.toLowerCase().includes("admin")) {
+            adminBtn.style.display = "inline-block";
+        } else {
+            adminBtn.style.display = "none";
+        }
+    }
+}
+
+function initAdmin() {
+    const adminBtn = document.getElementById("admin-portal-btn");
+    const adminOverlay = document.getElementById("admin-overlay");
+    const adminModal = document.getElementById("admin-modal");
+    
+    if (adminBtn) {
+        adminBtn.addEventListener("click", () => {
+            document.getElementById("vip-overlay").classList.remove("open");
+            document.getElementById("vip-sidebar").classList.remove("open");
+            adminOverlay.classList.add("open");
+            adminModal.classList.add("open");
+            loadAdminData();
+        });
+    }
+    
+    const closeAdmin = () => {
+        if(adminOverlay) adminOverlay.classList.remove("open");
+        if(adminModal) adminModal.classList.remove("open");
+        document.body.classList.remove("locked");
+    };
+    
+    const adminCloseBtn = document.getElementById("admin-close");
+    if(adminCloseBtn) adminCloseBtn.addEventListener("click", closeAdmin);
+    if(adminOverlay) adminOverlay.addEventListener("click", closeAdmin);
+}
+
+async function loadAdminData() {
+    const token = localStorage.getItem("luxe_auth_token") || "";
+    const headers = { "Authorization": token.startsWith("Bearer") ? token : `Bearer ${token}` };
+    
+    // Load Orders
+    try {
+        const res = await fetch("http://localhost:8000/admin/orders", { headers });
+        const data = await res.json();
+        const oList = document.getElementById("admin-orders-list");
+        if(data.success) {
+            oList.innerHTML = data.orders.map(o => `
+                <div style="padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-2);">
+                    <div style="color:var(--white);"><strong>${o.order_id}</strong> - ${o.status}</div>
+                    <div style="font-size:0.7rem;">ETA: ${o.eta}</div>
+                    <div style="font-size:0.7rem; color:var(--gold);">Email: ${o.user_email || 'Guest'}</div>
+                </div>
+            `).join("");
+        } else {
+            oList.innerHTML = "Failed to load.";
+        }
+    } catch(e) { console.error(e); }
+    
+    // Load Users
+    try {
+        const res = await fetch("http://localhost:8000/admin/users", { headers });
+        const data = await res.json();
+        const uList = document.getElementById("admin-users-list");
+        if(data.success) {
+            uList.innerHTML = data.users.map(u => `
+                <div style="padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-2);">
+                    <div style="color:var(--white);"><strong>${u.first_name} ${u.last_name}</strong> ${u.is_admin ? '<span style="color:var(--gold);">(Admin)</span>' : ''}</div>
+                    <div style="font-size:0.7rem;">${u.email}</div>
+                </div>
+            `).join("");
+        } else {
+            uList.innerHTML = "Failed to load.";
+        }
+    } catch(e) { console.error(e); }
 }
 
 // =============================================
@@ -1136,17 +1244,28 @@ window.goCheckoutStep = function (step) {
   document.getElementById(`checkout-step-${step}`).classList.add("active");
 };
 
-window.placeOrder = function () {
+window.placeOrder = async function () {
   const spinnerOverlay = document.getElementById("stripe-spinner-overlay");
   if (spinnerOverlay) {
     spinnerOverlay.style.display = "flex";
   }
 
-  setTimeout(async () => {
-    if (spinnerOverlay) {
-      spinnerOverlay.style.display = "none";
-    }
-    showToast("Stripe Payment Approved!");
+  try {
+    // Phase 4.2: Emulated Stripe Integration
+    // Simulate creating a PaymentIntent on the backend
+    const intentRes = await fetch("http://localhost:8000/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subtotal: cart.reduce((sum, i) => sum + i.price * i.qty, 0) })
+    });
+    const intentData = await intentRes.json();
+    console.log("Mock Stripe Client Secret:", intentData.client_secret);
+    
+    // Simulate 3D Secure verification delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    if (spinnerOverlay) spinnerOverlay.style.display = "none";
+    showToast("Stripe Payment Approved! (Mock)");
 
     const orderNum = "LUXE-" + Math.random().toString(36).substr(2, 8).toUpperCase();
     document.getElementById("success-order-num").textContent = `Order #${orderNum}`;
@@ -1213,7 +1332,10 @@ window.placeOrder = function () {
       cart = [];
       updateCartUI();
     }, 500);
-  }, 1500);
+  } catch (error) {
+    if (spinnerOverlay) spinnerOverlay.style.display = "none";
+    showToast("Payment Failed.");
+  }
 };
 
 window.closeCheckout = function () {
@@ -1485,9 +1607,16 @@ function initEventListeners() {
       document.getElementById("checkout-modal").classList.remove("open");
       document.getElementById("wishlist-sidebar").classList.remove("open");
       document.getElementById("wishlist-overlay").classList.remove("open");
+      const adminOverlay = document.getElementById("admin-overlay");
+      const adminModal = document.getElementById("admin-modal");
+      if(adminOverlay) adminOverlay.classList.remove("open");
+      if(adminModal) adminModal.classList.remove("open");
       document.body.classList.remove("locked");
     }
   });
+
+  // Init Admin
+  if (typeof initAdmin === "function") initAdmin();
 
   // Smooth scroll for nav links
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
@@ -1498,5 +1627,54 @@ function initEventListeners() {
         target.scrollIntoView({ behavior: "smooth" });
       }
     });
+  });
+
+  // Phase 4.4: Dynamic AI Translations (i18n)
+  initTranslations();
+}
+
+function initTranslations() {
+  const langSelect = document.getElementById("lang-select");
+  if (!langSelect) return;
+
+  langSelect.addEventListener("change", async () => {
+    const targetLang = langSelect.value;
+    if (targetLang === "EN") {
+      location.reload(); // Simple reset for English
+      return;
+    }
+
+    const elements = document.querySelectorAll("[data-i18n]");
+    if (elements.length === 0) return;
+
+    showToast(`Translating to ${targetLang}...`);
+    langSelect.disabled = true;
+
+    const textsToTranslate = Array.from(elements).map(el => el.textContent.trim());
+
+    try {
+      const res = await fetch("http://localhost:8000/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts: textsToTranslate, target: targetLang })
+      });
+      const data = await res.json();
+      
+      if (data.success && data.translated_texts) {
+        elements.forEach((el, index) => {
+          if (data.translated_texts[index]) {
+            el.textContent = data.translated_texts[index];
+          }
+        });
+        showToast("Translation complete!");
+      } else {
+        showToast("Translation failed.");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Translation error.");
+    } finally {
+      langSelect.disabled = false;
+    }
   });
 }

@@ -55,11 +55,23 @@ LUXE-Store/
 *   **Stripe Simulated Gateway & 3D Secure Verification**: An interactive checkout experience featuring a glassmorphic Stripe Sandbox element, and a realistic 3D Secure payment processing modal with rotating animations.
 *   **Full-Stack AJAX SQLite Tracking**: Checkouts perform live REST API POST requests to the local Flask backend. All transactions, subtotal arrays, and custom gift note data are persisted seamlessly in a lightweight local SQLite database.
 
-### 4. Interactive Concierge AI
+### 4. Interactive Concierge AI & RAG Pipeline
 *   **Dual-Engine Selector**: Slide-up settings dashboard to toggle between Google's **Gemini 1.5 Flash** cloud model or a custom, locally-hosted **NovaMind** Flask server.
+*   **Store Policy RAG**: The backend intercepts keywords (e.g., "shipping", "returns", "sizing") and dynamically injects `store_policies.md` context into the LLM system prompt, allowing the AI to answer complex, store-specific factual questions accurately.
 *   **Secure API Manager**: Secured local storage (`localStorage`) locker to save Gemini API keys and local authorization tokens.
 *   **Concierge Command Interceptor**: Intercepts structural actions inside conversational text (e.g. `[ACTION: ADD_TO_CART, ID: 2]`) to trigger browser cart drawers, load modals, and complete purchases on the user's screen.
-*   **Offline Fallback Mode**: High-fidelity local keyword parser acting as a fallback to address support inquiries when API servers are offline.
+
+### 5. Advanced Backend Architecture & Security
+*   **Secure Admin Portal**: Hidden role-based portal that unlocks for users registered with "admin" in their email. Fetches protected lists of all registered users and global orders.
+*   **Persistent Wishlists**: Cross-session heart icon tracking that automatically syncs to a JSON column in the SQLite database and restores upon login.
+*   **Production-Grade Authentication**: User passwords are cryptographically salted and hashed using **Bcrypt**. Sessions are authorized via cryptographically signed JSON Web Tokens (**JWTs**), not plain cookies.
+*   **Local Email Spooler & PDF Receipts**: Completing an authenticated checkout generates a beautiful HTML receipt simulating an SMTP mailer, saved directly to the backend filesystem. Additionally, a dynamic **PDF Invoice** is generated using `reportlab` and is downloadable from the VIP dashboard.
+
+### 6. The Ultimate Upgrade (Phase 4 Additions)
+*   **Real-Time WebSockets Streaming**: Migrated the AI Concierge to `Flask-SocketIO`, enabling character-by-character text streaming mimicking ChatGPT's real-time experience.
+*   **Dynamic AI Translations (i18n)**: Integrated a frontend language selector (EN, FR, IT, JP) that queries a `/translate` route powered by Llama-3.1 via Groq. Translates DOM text nodes natively on-the-fly without page reloads.
+*   **Emulated Stripe Checkout**: A simulated asynchronous payment flow mimicking 3D Secure verification via a mock backend `PaymentIntent` generator.
+*   **Native Android App Wrapper**: Used the Android CLI to package the HTML/CSS/JS frontend into a native Android APK using a `WebView` configuration.
 
 ---
 
