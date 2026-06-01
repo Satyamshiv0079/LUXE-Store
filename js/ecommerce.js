@@ -42,6 +42,7 @@ const PRODUCTS = [
     sizes: ["One Size"],
     stars: 5,
     img: "assets/images/product-3.jpg",
+    model3d: "https://modelviewer.dev/shared-assets/models/glTF-Sample-Assets/Models/DamagedHelmet/glTF/DamagedHelmet.gltf"
   },
   {
     id: 4,
@@ -628,6 +629,34 @@ function openModal(productId) {
   document.getElementById("modal-img").style.backgroundImage = `url('${product.img}')`;
   document.getElementById("modal-img").style.backgroundSize = "cover";
   document.getElementById("modal-img").style.backgroundPosition = "center";
+  
+  const toggleWrap = document.getElementById("modal-3d-toggle-wrap");
+  const viewer3d = document.getElementById("modal-3d-viewer");
+  const btn3d = document.getElementById("modal-3d-btn");
+  const imgMain = document.getElementById("modal-img");
+  
+  if (product.model3d) {
+      toggleWrap.style.display = "block";
+      viewer3d.src = product.model3d;
+      btn3d.onclick = () => {
+          if (viewer3d.style.display === "none") {
+              imgMain.style.display = "none";
+              viewer3d.style.display = "block";
+              btn3d.innerHTML = 'View Image <i class="fa-regular fa-image"></i>';
+          } else {
+              viewer3d.style.display = "none";
+              imgMain.style.display = "block";
+              btn3d.innerHTML = 'View in 3D <i class="fa-solid fa-cube"></i>';
+          }
+      };
+      viewer3d.style.display = "none";
+      imgMain.style.display = "block";
+      btn3d.innerHTML = 'View in 3D <i class="fa-solid fa-cube"></i>';
+  } else {
+      toggleWrap.style.display = "none";
+      viewer3d.style.display = "none";
+      imgMain.style.display = "block";
+  }
 
   const sizesContainer = document.getElementById("modal-sizes");
   sizesContainer.innerHTML = product.sizes
@@ -812,19 +841,41 @@ function initLogin() {
   const loginOverlay = document.getElementById("login-overlay");
   const loginModal = document.getElementById("login-modal");
   const loginClose = document.getElementById("login-close");
+  const vipOverlay = document.getElementById("vip-overlay");
+  const vipSidebar = document.getElementById("vip-sidebar");
+
+  if(currentUser && document.getElementById("vip-user-name")) {
+      document.getElementById("vip-user-name").textContent = currentUser.name;
+  }
 
   loginBtn.addEventListener("click", () => {
     if (currentUser) {
-      // Sign out
-      currentUser = null;
-      localStorage.removeItem("luxe_user");
-      updateLoginUI();
-      showToast("Signed out successfully");
+      vipOverlay.classList.add("open");
+      vipSidebar.classList.add("open");
+      document.body.classList.add("locked");
+      loadVIPOrders();
       return;
     }
     loginOverlay.classList.add("open");
     loginModal.classList.add("open");
     document.body.classList.add("locked");
+  });
+
+  document.getElementById("vip-close").addEventListener("click", () => {
+    vipOverlay.classList.remove("open");
+    vipSidebar.classList.remove("open");
+    document.body.classList.remove("locked");
+  });
+  
+  document.getElementById("vip-logout-btn").addEventListener("click", () => {
+    currentUser = null;
+    localStorage.removeItem("luxe_user");
+    localStorage.removeItem("luxe_auth_token");
+    updateLoginUI();
+    vipOverlay.classList.remove("open");
+    vipSidebar.classList.remove("open");
+    document.body.classList.remove("locked");
+    showToast("Signed out successfully");
   });
 
   const closeLogin = () => {
@@ -835,7 +886,6 @@ function initLogin() {
   loginClose.addEventListener("click", closeLogin);
   loginOverlay.addEventListener("click", closeLogin);
 
-  // Tab switching
   document.querySelectorAll(".login-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".login-tab").forEach((t) => t.classList.remove("active"));
@@ -846,29 +896,90 @@ function initLogin() {
     });
   });
 
-  // Sign in
-  document.getElementById("signin-form").addEventListener("submit", (e) => {
+  document.getElementById("signin-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("signin-email").value;
-    currentUser = { name: email.split("@")[0], email };
-    localStorage.setItem("luxe_user", JSON.stringify(currentUser));
-    updateLoginUI();
-    closeLogin();
-    showToast(`Welcome back, ${currentUser.name}! ✨`);
+    const password = document.getElementById("signin-password").value;
+    
+    try {
+        const res = await fetch("http://localhost:8000/auth/login", {
+            method: "POST", headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({email, password})
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = { name: data.user.first_name + " " + data.user.last_name, email: data.user.email };
+            localStorage.setItem("luxe_user", JSON.stringify(currentUser));
+            localStorage.setItem("luxe_auth_token", data.token);
+            if(document.getElementById("vip-user-name")) document.getElementById("vip-user-name").textContent = currentUser.name;
+            updateLoginUI();
+            closeLogin();
+            showToast(`Welcome back, ${data.user.first_name}! ✨`);
+        } else {
+            showToast(data.error || "Login failed");
+        }
+    } catch(e) {
+        console.error(e);
+        showToast("Error connecting to server");
+    }
   });
 
-  // Sign up
-  document.getElementById("signup-form").addEventListener("submit", (e) => {
+  document.getElementById("signup-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const fname = document.getElementById("signup-fname").value;
     const lname = document.getElementById("signup-lname").value;
     const email = document.getElementById("signup-email").value;
-    currentUser = { name: `${fname} ${lname}`, email };
-    localStorage.setItem("luxe_user", JSON.stringify(currentUser));
-    updateLoginUI();
-    closeLogin();
-    showToast(`Welcome to LUXE, ${fname}! ✨`);
+    const password = document.getElementById("signup-password").value;
+    
+    try {
+        const res = await fetch("http://localhost:8000/auth/register", {
+            method: "POST", headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({email, password, first_name: fname, last_name: lname})
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`Registration successful! Please sign in.`);
+            document.getElementById("tab-signin").click();
+            document.getElementById("signin-email").value = email;
+        } else {
+            showToast(data.error || "Registration failed");
+        }
+    } catch(e) {
+        console.error(e);
+        showToast("Error connecting to server");
+    }
   });
+}
+
+async function loadVIPOrders() {
+    if (!currentUser) return;
+    const list = document.getElementById("vip-orders-list");
+    list.innerHTML = `<p style="color:var(--muted); font-size:0.8rem;">Loading...</p>`;
+    
+    try {
+        const token = localStorage.getItem("luxe_auth_token") || "";
+        const res = await fetch(`http://localhost:8000/auth/orders?email=${encodeURIComponent(currentUser.email)}`, {
+            headers: { "Authorization": token.startsWith("Bearer") ? token : `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.orders.length > 0) {
+            list.innerHTML = data.orders.map(o => `
+                <div style="background:var(--bg-3); border:1px solid var(--border); border-radius:var(--radius); padding:1rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <strong style="color:var(--gold); font-size:0.8rem;">${o.order_id}</strong>
+                        <span style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">${o.status}</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--muted);">ETA: ${o.eta}</div>
+                    ${o.details && o.details.subtotal ? `<div style="font-size:0.75rem; color:var(--white); margin-top:0.4rem;">Total: ${formatPrice(o.details.subtotal)}</div>` : ''}
+                </div>
+            `).join("");
+        } else {
+            list.innerHTML = `<p style="color:var(--muted); font-size:0.8rem;">No recent orders.</p>`;
+        }
+    } catch (e) {
+        console.error(e);
+        list.innerHTML = `<p style="color:var(--gold); font-size:0.8rem;">Failed to load orders.</p>`;
+    }
 }
 
 // =============================================
@@ -914,10 +1025,59 @@ function initSearch() {
   const overlay = document.getElementById("search-overlay");
   const input = document.getElementById("search-input");
   const results = document.getElementById("search-results");
+  const slider = document.getElementById("search-price-slider");
+  const sliderVal = document.getElementById("search-price-val");
+  const catCheckboxes = document.querySelectorAll(".search-cat-filter");
+
+  const filterResults = () => {
+    const q = input.value.toLowerCase().trim();
+    const maxPrice = parseInt(slider.value, 10);
+    const activeCats = Array.from(catCheckboxes).filter(c => c.checked).map(c => c.value);
+    
+    // Calculate un-converted base price max limit
+    const curr = CURRENCY_RATES[currentCurrency];
+    const convertedMax = formatPrice(maxPrice / curr.rate).replace(/[^0-9]/g, '');
+    sliderVal.textContent = maxPrice;
+
+    const matches = PRODUCTS.filter((p) => {
+        const pConvertedPrice = p.price * curr.rate;
+        const textMatch = p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+        const priceMatch = pConvertedPrice <= maxPrice;
+        const catMatch = activeCats.includes(p.category.toLowerCase());
+        
+        // Show everything matching categories/price if query is empty, else filter by text too
+        return (q ? textMatch : true) && priceMatch && catMatch;
+    });
+
+    if (!matches.length) {
+        results.innerHTML = `<p style="color:var(--muted); font-size:0.85rem; grid-column:span 3;">No results found.</p>`;
+        return;
+    }
+
+    results.innerHTML = matches.map((p) => `
+      <div class="search-result-card" onclick="openModal(${p.id}); document.getElementById('search-overlay').classList.remove('open');">
+        <div class="search-result-img" style="background-image: url('${p.img}'); background-size: cover; background-position: center;"></div>
+        <div class="search-result-info">
+          <div class="search-result-name">${p.name}</div>
+          <div class="search-result-price">${formatPrice(p.price)}</div>
+        </div>
+      </div>
+    `).join("");
+      
+    if (typeof gsap !== 'undefined') {
+        gsap.fromTo(results.children, 
+            {opacity: 0, y: 15}, 
+            {opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out"}
+        );
+    }
+  };
 
   document.getElementById("search-btn").addEventListener("click", () => {
     overlay.classList.add("open");
-    setTimeout(() => input.focus(), 400);
+    setTimeout(() => {
+        input.focus();
+        filterResults(); // Initial render of all products
+    }, 400);
   });
   document.getElementById("search-close").addEventListener("click", () => {
     overlay.classList.remove("open");
@@ -926,32 +1086,9 @@ function initSearch() {
     if (e.key === "Escape") overlay.classList.remove("open");
   });
 
-  input.addEventListener("input", () => {
-    const q = input.value.toLowerCase().trim();
-    if (!q) { results.innerHTML = ""; return; }
-
-    const matches = PRODUCTS.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
-    );
-
-    results.innerHTML = matches.length
-      ? matches
-          .map(
-            (p) => `
-          <div class="search-result-card" onclick="openModal(${p.id}); document.getElementById('search-overlay').classList.remove('open');">
-            <div class="search-result-img" style="background-image: url('${p.img}'); background-size: cover; background-position: center;"></div>
-            <div class="search-result-info">
-              <div class="search-result-name">${p.name}</div>
-              <div class="search-result-price">${formatPrice(p.price)}</div>
-            </div>
-          </div>`
-          )
-          .join("")
-      : `<p style="color:var(--muted); font-size:0.85rem; grid-column:span 3;">No results found for "${input.value}"</p>`;
-  });
+  input.addEventListener("input", filterResults);
+  if(slider) slider.addEventListener("input", filterResults);
+  if(catCheckboxes) catCheckboxes.forEach(c => c.addEventListener("change", filterResults));
 }
 
 window.searchFor = function (term) {
@@ -1000,27 +1137,83 @@ window.goCheckoutStep = function (step) {
 };
 
 window.placeOrder = function () {
-  const orderNum = "LUXE-" + Math.random().toString(36).substr(2, 8).toUpperCase();
-  document.getElementById("success-order-num").textContent = `Order #${orderNum}`;
-  
-  // Set up success gift wrapping diagnostics if active
-  const successNote = document.getElementById("success-gift-note");
-  if (successNote) {
-    if (addGiftPackaging) {
-      successNote.innerHTML = `<i class="fa-solid fa-gift"></i> Signature luxury packaging active with **${giftRibbonColor}** ribbon.<br/>` +
-                              (giftMessageText ? `<em>" ${giftMessageText} "</em>` : "No handwritten message added.");
-      successNote.style.display = "block";
-    } else {
-      successNote.style.display = "none";
-    }
+  const spinnerOverlay = document.getElementById("stripe-spinner-overlay");
+  if (spinnerOverlay) {
+    spinnerOverlay.style.display = "flex";
   }
 
-  goCheckoutStep(4);
-  // Clear cart after order
-  setTimeout(() => {
-    cart = [];
-    updateCartUI();
-  }, 500);
+  setTimeout(async () => {
+    if (spinnerOverlay) {
+      spinnerOverlay.style.display = "none";
+    }
+    showToast("Stripe Payment Approved!");
+
+    const orderNum = "LUXE-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+    document.getElementById("success-order-num").textContent = `Order #${orderNum}`;
+    
+    // Set up success gift wrapping diagnostics if active
+    const successNote = document.getElementById("success-gift-note");
+    if (successNote) {
+      if (addGiftPackaging) {
+        successNote.innerHTML = `<i class="fa-solid fa-gift"></i> Signature luxury packaging active with **${giftRibbonColor}** ribbon.<br/>` +
+                                (giftMessageText ? `<em>" ${giftMessageText} "</em>` : "No handwritten message added.");
+        successNote.style.display = "block";
+      } else {
+        successNote.style.display = "none";
+      }
+    }
+
+    // Full-Stack AJAX Sync
+    const items = cart.map(i => ({ id: i.id, name: i.name, qty: i.qty, size: i.size }));
+    const details = {
+      items: items,
+      currency: currentCurrency,
+      addGiftPackaging: addGiftPackaging,
+      giftRibbonColor: addGiftPackaging ? giftRibbonColor : null,
+      giftMessageText: addGiftPackaging ? giftMessageText : null,
+      subtotal: cart.reduce((sum, i) => sum + i.price * i.qty, 0),
+      discount: activeDiscount
+    };
+
+    const tokenInput = document.getElementById("novamind-token-input");
+    const endpointInput = document.getElementById("novamind-endpoint-input");
+    let apiUrl = "http://localhost:8000/orders/new";
+    let token = "";
+    if (endpointInput && endpointInput.value) {
+       try {
+         let urlObj = new URL(endpointInput.value);
+         apiUrl = urlObj.origin + "/orders/new";
+       } catch(e) {}
+    }
+    if (tokenInput && tokenInput.value) {
+       token = tokenInput.value;
+    }
+    
+    try {
+      await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": token.startsWith('Bearer') ? token : `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          order_id: orderNum,
+          status: "Processing",
+          eta: "3-5 business days",
+          details: details
+        })
+      });
+    } catch (e) {
+      console.warn("Failed to sync order to local backend", e);
+    }
+
+    goCheckoutStep(4);
+    // Clear cart after order
+    setTimeout(() => {
+      cart = [];
+      updateCartUI();
+    }, 500);
+  }, 1500);
 };
 
 window.closeCheckout = function () {

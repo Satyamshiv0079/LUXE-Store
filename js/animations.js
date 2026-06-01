@@ -230,6 +230,53 @@ function initScrollTriggers() {
       start: "top 75%",
     },
   });
+
+  // Parallax Cover Reveals
+  gsap.utils.toArray(".collection-img").forEach(img => {
+    gsap.fromTo(img, 
+      { scale: 1.1, yPercent: -10 }, 
+      { yPercent: 15, ease: "none", scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: 0.4 } }
+    );
+  });
+
+  // Staggered Columns Vertical Offset
+  gsap.utils.toArray(".editorial-card").forEach((card, index) => {
+    if (window.innerWidth > 768) {
+      gsap.to(card, {
+        y: index % 2 === 0 ? -40 : 40,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".editorial-grid",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1.2
+        }
+      });
+    }
+  });
+
+  // Border Draw-In Reveals
+  document.querySelectorAll(".section-header").forEach(header => {
+    header.style.position = "relative";
+    const border = document.createElement("div");
+    border.style.position = "absolute";
+    border.style.bottom = "-15px";
+    border.style.left = "0";
+    border.style.width = "0%";
+    border.style.height = "2px";
+    border.style.backgroundColor = "var(--gold)";
+    header.appendChild(border);
+
+    gsap.to(border, {
+      width: "100%",
+      duration: 1.5,
+      ease: "power3.inOut",
+      scrollTrigger: {
+        trigger: header,
+        start: "top 85%"
+      }
+    });
+  });
 }
 
 // =============================================
