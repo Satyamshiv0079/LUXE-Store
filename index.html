@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUXE — Where Desire Meets Design</title>
+  <meta name="description" content="LUXE is an immersive luxury e-commerce experience. Discover curated products with cinematic storytelling and a smart AI shopping assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cursor" class="cursor"></div>
+<div id="cursor-follower" class="cursor-follower"></div>
+
+<!-- LOADER -->
+<div id="loader" class="loader">
+  <div class="loader-inner">
+    <div class="loader-logo">LUXE</div>
+    <div class="loader-bar"><div class="loader-progress" id="loader-progress"></div></div>
+    <div class="loader-count" id="loader-count">0%</div>
+  </div>
+</div>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <div class="mobile-nav-header">
+    <span class="nav-logo">LUXE</span>
+    <button class="mobile-nav-close" id="mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <nav class="mobile-nav-links">
+    <a href="#collections" class="mobile-nav-link" data-close-mobile>Collections</a>
+    <a href="#about" class="mobile-nav-link" data-close-mobile>Atelier</a>
+    <a href="#products" class="mobile-nav-link" data-close-mobile>Shop</a>
+    <a href="#editorial" class="mobile-nav-link" data-close-mobile>Editorial</a>
+  </nav>
+  <div class="mobile-nav-footer">
+    <div class="footer-social">
+      <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+      <a href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="nav-logo">LUXE</span>
+  </div>
+  <div class="nav-center">
+    <a href="#collections" class="nav-link">Collections</a>
+    <a href="#about" class="nav-link">Atelier</a>
+    <a href="#products" class="nav-link">Shop</a>
+    <a href="#editorial" class="nav-link">Editorial</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-icon-btn" id="search-btn" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+    <button class="nav-icon-btn" id="wishlist-btn" aria-label="Wishlist">
+      <i class="fa-regular fa-heart"></i>
+      <span class="cart-badge wishlist-badge" id="wishlist-count" style="display:none;">0</span>
+    </button>
+    <button class="nav-icon-btn" id="cart-btn" aria-label="Cart">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <span class="cart-badge" id="cart-count">0</span>
+    </button>
+    <button class="nav-icon-btn" id="login-btn" aria-label="Account"><i class="fa-regular fa-user"></i></button>
+    <button class="nav-icon-btn" id="chatbot-open-btn" aria-label="AI Assistant"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <div class="hero-video-overlay"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-eyebrow" data-reveal><span>Spring / Summer 2025</span></div>
+    <h1 class="hero-title">
+      <span class="title-line">Where</span>
+      <span class="title-line title-italic">Desire</span>
+      <span class="title-line">Meets Design</span>
+    </h1>
+    <p class="hero-subtitle" data-reveal>Curated luxury for those who demand more than ordinary.</p>
+    <div class="hero-actions" data-reveal>
+      <a href="#collections" class="btn-primary magnetic">Explore Collection</a>
+      <a href="#about" class="btn-ghost magnetic">Our Story <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+  <div class="hero-scroll-indicator">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num counter" data-target="240">0</span><span class="stat-suffix">+</span><span class="stat-label">Curated Pieces</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num counter" data-target="18">0</span><span class="stat-suffix"></span><span class="stat-label">Ateliers</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num counter" data-target="32">0</span><span class="stat-suffix"></span><span class="stat-label">Countries</span></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrapper">
+  <div class="marquee-track">
+    <span>Exclusive Drops</span><span class="marquee-sep">✦</span>
+    <span>New Collection</span><span class="marquee-sep">✦</span>
+    <span>Limited Edition</span><span class="marquee-sep">✦</span>
+    <span>Free Global Shipping</span><span class="marquee-sep">✦</span>
+    <span>Exclusive Drops</span><span class="marquee-sep">✦</span>
+    <span>New Collection</span><span class="marquee-sep">✦</span>
+    <span>Limited Edition</span><span class="marquee-sep">✦</span>
+    <span>Free Global Shipping</span><span class="marquee-sep">✦</span>
+    <span>Exclusive Drops</span><span class="marquee-sep">✦</span>
+    <span>New Collection</span><span class="marquee-sep">✦</span>
+  </div>
+</div>
+
+<!-- COLLECTIONS -->
+<section class="collections" id="collections">
+  <div class="section-header">
+    <div class="section-label">Collections</div>
+    <h2 class="section-title">Crafted for<br/><em>Connoisseurs</em></h2>
+  </div>
+  <div class="collections-grid">
+    <div class="collection-card" data-collection="women">
+      <div class="collection-img-wrap">
+        <div class="collection-img collection-img-1"></div>
+      </div>
+      <div class="collection-info">
+        <span class="collection-label">Women</span>
+        <h3 class="collection-name">Femme Étoile</h3>
+        <a href="#products" class="collection-link">Shop Now <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+    <div class="collection-card" data-collection="men">
+      <div class="collection-img-wrap">
+        <div class="collection-img collection-img-2"></div>
+      </div>
+      <div class="collection-info">
+        <span class="collection-label">Men</span>
+        <h3 class="collection-name">Homme Noir</h3>
+        <a href="#products" class="collection-link">Shop Now <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+    <div class="collection-card" data-collection="accessories">
+      <div class="collection-img-wrap">
+        <div class="collection-img collection-img-3"></div>
+      </div>
+      <div class="collection-info">
+        <span class="collection-label">Accessories</span>
+        <h3 class="collection-name">Objet d'Art</h3>
+        <a href="#products" class="collection-link">Shop Now <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-inner">
+    <div class="about-left">
+      <div class="about-img-stack">
+        <div class="about-img-main"></div>
+        <div class="about-img-accent"></div>
+        <div class="about-quote">
+          <span>"</span>
+          <p>Fashion is not something that exists in dresses only. Fashion is in the sky, in the street.</p>
+          <cite>— Coco Chanel</cite>
+        </div>
+      </div>
+    </div>
+    <div class="about-right">
+      <div class="section-label">Our Atelier</div>
+      <h2 class="about-title">A Legacy of<br/><em>Uncompromising</em><br/>Craft</h2>
+      <p class="about-text">Founded in the heart of Milan, LUXE has spent a decade redefining what it means to dress with intention. Each piece in our collection is the result of hundreds of hours of meticulous craftsmanship, using only the finest materials sourced from across the globe.</p>
+      <p class="about-text">We believe luxury is not just a price point — it's a philosophy. A commitment to quality, sustainability, and timeless style that transcends seasonal trends.</p>
+      <div class="about-features">
+        <div class="about-feature"><i class="fa-solid fa-leaf"></i><span>Sustainably Sourced</span></div>
+        <div class="about-feature"><i class="fa-solid fa-hands"></i><span>Handcrafted</span></div>
+        <div class="about-feature"><i class="fa-solid fa-shield-halved"></i><span>2-Year Warranty</span></div>
+        <div class="about-feature"><i class="fa-solid fa-globe"></i><span>Free Global Shipping</span></div>
+      </div>
+      <a href="#products" class="btn-primary magnetic">Explore Products</a>
+    </div>
+  </div>
+</section>
+
+<!-- HORIZONTAL SCROLL PRODUCTS -->
+<section class="h-scroll-section" id="products">
+  <div class="h-scroll-sticky">
+    <div class="h-scroll-header">
+      <div class="section-label">Featured</div>
+      <h2 class="section-title">The Edit</h2>
+      <p class="h-scroll-hint"><i class="fa-solid fa-arrow-right"></i> Scroll to explore</p>
+    </div>
+    <div class="h-scroll-track" id="h-scroll-track"></div>
+  </div>
+</section>
+
+<!-- EDITORIAL -->
+<section class="editorial" id="editorial">
+  <div class="editorial-inner">
+    <div class="editorial-left">
+      <div class="section-label">Editorial</div>
+      <h2 class="section-title">Stories Behind<br/><em>The Craft</em></h2>
+    </div>
+    <div class="editorial-grid">
+      <article class="editorial-card editorial-featured">
+        <div class="editorial-img editorial-img-1"></div>
+        <div class="editorial-meta">
+          <span class="editorial-cat">Style</span>
+          <h3>The Art of Dressing with Intention</h3>
+          <p>How the world's most stylish dress for themselves, not for others.</p>
+          <a href="#" class="editorial-link">Read More <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </article>
+      <article class="editorial-card">
+        <div class="editorial-img editorial-img-2"></div>
+        <div class="editorial-meta">
+          <span class="editorial-cat">Craft</span>
+          <h3>Ateliers of Milan: A Photo Essay</h3>
+          <a href="#" class="editorial-link">Read More <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </article>
+      <article class="editorial-card">
+        <div class="editorial-img editorial-img-3"></div>
+        <div class="editorial-meta">
+          <span class="editorial-cat">Sustainability</span>
+          <h3>Luxury's Green Revolution</h3>
+          <a href="#" class="editorial-link">Read More <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter">
+  <div class="newsletter-inner">
+    <div class="newsletter-orb"></div>
+    <div class="section-label">Stay Connected</div>
+    <h2 class="newsletter-title">First Access.<br/><em>Always.</em></h2>
+    <p>Join the LUXE inner circle for exclusive drops, editorial content, and private events.</p>
+    <form class="newsletter-form" id="newsletter-form">
+      <input type="email" placeholder="your@email.com" class="newsletter-input" id="newsletter-email" required />
+      <button type="submit" class="btn-primary magnetic">Join LUXE</button>
+    </form>
+    <div class="newsletter-note">No spam. Unsubscribe anytime.</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-logo">LUXE</span>
+        <p>Where desire meets design. Crafted for those who live with intention.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+          <a href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Shop</h4>
+          <a href="#">Women</a><a href="#">Men</a><a href="#">Accessories</a><a href="#">Sale</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#">About</a><a href="#">Careers</a><a href="#">Press</a><a href="#">Sustainability</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="#">Contact</a><a href="#">FAQ</a><a href="#">Returns</a><a href="#">Size Guide</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 LUXE. All rights reserved.</span>
+      <div class="footer-legal">
+        <a href="#">Privacy Policy</a><a href="#">Terms</a><a href="#">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<aside class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <h3>Your Cart <span id="cart-header-count">(0)</span></h3>
+    <button class="cart-close" id="cart-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="cart-items">
+    <div class="cart-empty">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <p>Your cart is empty</p>
+      <a href="#products" class="btn-primary" id="start-shopping-btn">Start Shopping</a>
+    </div>
+  </div>
+  <div class="cart-footer" id="cart-footer" style="display:none;">
+    <div class="cart-subtotal">
+      <span>Subtotal</span><span id="cart-subtotal">$0.00</span>
+    </div>
+    <p class="cart-shipping-note">Free shipping on all orders</p>
+    <button class="btn-primary full-width" id="checkout-btn">Checkout <i class="fa-solid fa-arrow-right"></i></button>
+    <button class="btn-ghost full-width" id="continue-shopping-btn">Continue Shopping</button>
+  </div>
+</aside>
+
+<!-- WISHLIST SIDEBAR -->
+<div class="wishlist-overlay" id="wishlist-overlay"></div>
+<aside class="wishlist-sidebar" id="wishlist-sidebar">
+  <div class="cart-header">
+    <h3>Wishlist <span id="wishlist-header-count">(0)</span></h3>
+    <button class="cart-close" id="wishlist-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="wishlist-items">
+    <div class="cart-empty">
+      <i class="fa-regular fa-heart"></i>
+      <p>Your wishlist is empty</p>
+      <p class="cart-empty-sub">Save items you love</p>
+    </div>
+  </div>
+</aside>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="modal-overlay"></div>
+<div class="product-modal" id="product-modal">
+  <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-inner">
+    <div class="modal-gallery">
+      <div class="modal-img-main" id="modal-img"></div>
+    </div>
+    <div class="modal-details">
+      <span class="modal-category" id="modal-category"></span>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <div class="modal-price" id="modal-price"></div>
+      <p class="modal-description" id="modal-description"></p>
+      <div class="modal-sizes">
+        <span class="size-label">Select Size</span>
+        <div class="size-options" id="modal-sizes"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary modal-add-cart" id="modal-add-cart"><i class="fa-solid fa-bag-shopping"></i> Add to Cart</button>
+        <button class="btn-ghost modal-wishlist" id="modal-wishlist-btn"><i class="fa-regular fa-heart"></i></button>
+      </div>
+      <div class="modal-meta">
+        <div class="modal-meta-item"><i class="fa-solid fa-truck"></i> Free global shipping</div>
+        <div class="modal-meta-item"><i class="fa-solid fa-rotate-left"></i> 30-day returns</div>
+        <div class="modal-meta-item"><i class="fa-solid fa-shield-halved"></i> 2-year warranty</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="login-overlay" id="login-overlay"></div>
+<div class="login-modal" id="login-modal">
+  <button class="modal-close login-modal-close" id="login-close"><i class="fa-solid fa-xmark"></i></button>
+  <div class="login-brand">
+    <span class="login-logo">LUXE</span>
+    <p>Your luxury world awaits</p>
+  </div>
+  <div class="login-tabs">
+    <button class="login-tab active" id="tab-signin" data-tab="signin">Sign In</button>
+    <button class="login-tab" id="tab-signup" data-tab="signup">Create Account</button>
+  </div>
+
+  <!-- Sign In Form -->
+  <form class="login-form" id="signin-form">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="signin-email" placeholder="your@email.com" required />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="signin-password" placeholder="••••••••" required />
+    </div>
+    <button type="submit" class="btn-primary full-width" id="signin-submit">Sign In</button>
+    <a href="#" class="login-forgot">Forgot password?</a>
+  </form>
+
+  <!-- Sign Up Form -->
+  <form class="login-form hidden" id="signup-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="signup-fname" placeholder="Arpana" required />
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="signup-lname" placeholder="Kumari" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="signup-email" placeholder="your@email.com" required />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="signup-password" placeholder="Min 8 characters" required />
+    </div>
+    <button type="submit" class="btn-primary full-width" id="signup-submit">Create Account</button>
+  </form>
+
+  <div class="login-divider"><span>or continue with</span></div>
+  <div class="login-social-btns">
+    <button class="login-social-btn"><i class="fa-brands fa-google"></i> Google</button>
+    <button class="login-social-btn"><i class="fa-brands fa-apple"></i> Apple</button>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="checkout-overlay" id="checkout-overlay"></div>
+<div class="checkout-modal" id="checkout-modal">
+  <button class="modal-close checkout-close-btn" id="checkout-close"><i class="fa-solid fa-xmark"></i></button>
+
+  <!-- Step indicators -->
+  <div class="checkout-steps">
+    <div class="checkout-step active" id="step-ind-1"><span>1</span> Review</div>
+    <div class="checkout-step-line"></div>
+    <div class="checkout-step" id="step-ind-2"><span>2</span> Delivery</div>
+    <div class="checkout-step-line"></div>
+    <div class="checkout-step" id="step-ind-3"><span>3</span> Payment</div>
+    <div class="checkout-step-line"></div>
+    <div class="checkout-step" id="step-ind-4"><span>4</span> Confirm</div>
+  </div>
+
+  <!-- Step 1: Review -->
+  <div class="checkout-step-content active" id="checkout-step-1">
+    <h2 class="checkout-title">Review Your Order</h2>
+    <div class="checkout-order-items" id="checkout-order-items"></div>
+    <div class="checkout-summary">
+      <div class="checkout-summary-row"><span>Subtotal</span><span id="co-subtotal">$0.00</span></div>
+      <div class="checkout-summary-row"><span>Shipping</span><span class="text-gold">Free</span></div>
+      <div class="checkout-summary-row checkout-total"><span>Total</span><span id="co-total">$0.00</span></div>
+    </div>
+    <button class="btn-primary full-width" onclick="goCheckoutStep(2)">Continue to Delivery <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+
+  <!-- Step 2: Delivery -->
+  <div class="checkout-step-content" id="checkout-step-2">
+    <h2 class="checkout-title">Delivery Details</h2>
+    <form class="checkout-form" id="delivery-form">
+      <div class="form-row">
+        <div class="form-group"><label>First Name</label><input type="text" placeholder="Arpana" id="del-fname" /></div>
+        <div class="form-group"><label>Last Name</label><input type="text" placeholder="Kumari" id="del-lname" /></div>
+      </div>
+      <div class="form-group"><label>Address Line 1</label><input type="text" placeholder="House No., Street Name" id="del-addr1" /></div>
+      <div class="form-group"><label>Address Line 2</label><input type="text" placeholder="Landmark (optional)" id="del-addr2" /></div>
+      <div class="form-row">
+        <div class="form-group"><label>City</label><input type="text" placeholder="New Delhi" id="del-city" /></div>
+        <div class="form-group"><label>PIN Code</label><input type="text" placeholder="110001" id="del-pin" /></div>
+      </div>
+      <div class="form-group"><label>Phone</label><input type="tel" placeholder="+91 98765 43210" id="del-phone" /></div>
+    </form>
+    <div class="checkout-nav-btns">
+      <button class="btn-ghost" onclick="goCheckoutStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      <button class="btn-primary" onclick="goCheckoutStep(3)">Continue to Payment <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Step 3: Payment -->
+  <div class="checkout-step-content" id="checkout-step-3">
+    <h2 class="checkout-title">Payment Method</h2>
+    <div class="payment-methods">
+      <label class="payment-option selected" id="pay-card">
+        <input type="radio" name="payment" value="card" checked />
+        <i class="fa-regular fa-credit-card"></i>
+        <div>
+          <strong>Credit / Debit Card</strong>
+          <small>Visa, Mastercard, Amex</small>
+        </div>
+      </label>
+      <label class="payment-option" id="pay-upi">
+        <input type="radio" name="payment" value="upi" />
+        <i class="fa-solid fa-mobile-screen-button"></i>
+        <div>
+          <strong>UPI</strong>
+          <small>GPay, PhonePe, Paytm</small>
+        </div>
+      </label>
+      <label class="payment-option" id="pay-cod">
+        <input type="radio" name="payment" value="cod" />
+        <i class="fa-solid fa-money-bill-1"></i>
+        <div>
+          <strong>Cash on Delivery</strong>
+          <small>Pay when delivered</small>
+        </div>
+      </label>
+    </div>
+    <div class="card-fields" id="card-fields">
+      <div class="form-group"><label>Card Number</label><input type="text" placeholder="1234 5678 9012 3456" maxlength="19" id="card-num" /></div>
+      <div class="form-row">
+        <div class="form-group"><label>Expiry</label><input type="text" placeholder="MM / YY" id="card-expiry" /></div>
+        <div class="form-group"><label>CVV</label><input type="text" placeholder="•••" maxlength="3" id="card-cvv" /></div>
+      </div>
+      <div class="form-group"><label>Name on Card</label><input type="text" placeholder="ARPANA KUMARI" id="card-name" /></div>
+    </div>
+    <div class="checkout-nav-btns">
+      <button class="btn-ghost" onclick="goCheckoutStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      <button class="btn-primary" onclick="placeOrder()">Place Order <i class="fa-solid fa-lock"></i></button>
+    </div>
+  </div>
+
+  <!-- Step 4: Confirmation -->
+  <div class="checkout-step-content" id="checkout-step-4">
+    <div class="order-success">
+      <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <h2>Order Confirmed!</h2>
+      <p class="success-order-num" id="success-order-num"></p>
+      <p class="success-message">Thank you for shopping with LUXE. Your order will be delivered within 5–10 business days. A confirmation has been sent to your email.</p>
+      <div class="success-actions">
+        <button class="btn-primary" onclick="closeCheckout()">Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<div class="chatbot-wrapper" id="chatbot-wrapper">
+  <button class="chatbot-fab" id="chatbot-fab" aria-label="Open AI Assistant">
+    <div class="fab-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+    <div class="fab-pulse"></div>
+  </button>
+  <div class="chatbot-panel" id="chatbot-panel">
+    <div class="chatbot-header">
+      <div class="chatbot-avatar">
+        <div class="avatar-ring"></div>
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+      </div>
+      <div class="chatbot-info">
+        <span class="chatbot-name">LUXE AI</span>
+        <span class="chatbot-status"><span class="status-dot"></span>Online</span>
+      </div>
+      <div class="chatbot-mode-toggle">
+        <button class="mode-btn active" id="mode-support" data-mode="support">Support</button>
+        <button class="mode-btn" id="mode-assistant" data-mode="assistant">Assistant</button>
+      </div>
+      <button class="chatbot-settings-btn" id="chatbot-settings-btn" aria-label="AI Settings" title="Gemini API Key Settings" style="margin-left: 0.4rem; background: none; border: none; color: var(--muted); font-size: 1rem; cursor: none; transition: color 0.3s; flex-shrink: 0;"><i class="fa-solid fa-gear"></i></button>
+      <button class="chatbot-close-btn" id="chatbot-close" style="margin-left: 0.4rem;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- CHATBOT SETTINGS PANEL -->
+    <div class="chatbot-settings-panel" id="chatbot-settings-panel">
+      <div class="settings-panel-header">
+        <h4>AI Concierge Settings</h4>
+        <button class="settings-panel-close" id="chatbot-settings-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="settings-panel-body" style="display: flex; flex-direction: column; height: calc(100% - 3.5rem); overflow-y: auto;">
+        
+        <!-- Engine selection -->
+        <div class="form-group" style="margin-bottom: 0.8rem;">
+          <label for="ai-engine-select">AI Engine Provider</label>
+          <select id="ai-engine-select" style="width: 100%; padding: 0.75rem 0.8rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: var(--font-ui); font-size: 0.8rem; outline: none; transition: border-color 0.3s; cursor: none;">
+            <option value="gemini">Gemini AI (Direct Cloud)</option>
+            <option value="novamind">NovaMind AI (Local API Server)</option>
+          </select>
+        </div>
+
+        <!-- Gemini Config Area -->
+        <div id="gemini-config-area">
+          <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 0.6rem; line-height: 1.4;">To unlock live style consultation, enter your Gemini API Key from Google AI Studio. Your key is stored securely in your local browser.</p>
+          <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0.8rem;">
+            <label for="gemini-key-input">Gemini API Key</label>
+            <div class="input-with-toggle" style="position: relative; display: flex; align-items: center; width: 100%;">
+              <input type="password" id="gemini-key-input" placeholder="AIzaSy..." style="width: 100%; padding: 0.75rem 2.5rem 0.75rem 0.8rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: monospace; font-size: 0.8rem; outline: none; transition: border-color 0.3s;" />
+              <button class="toggle-password-btn" id="toggle-gemini-key" style="position: absolute; right: 0.8rem; background: none; border: none; color: var(--muted); cursor: none; transition: color 0.3s; padding: 0;"><i class="fa-regular fa-eye"></i></button>
+            </div>
+          </div>
+          <div class="settings-help" style="text-align: center; font-size: 0.72rem; margin-top: 0.4rem; margin-bottom: 0.8rem;">
+            <a href="https://aistudio.google.com/" target="_blank" style="color: var(--gold); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Get free API Key from Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+          </div>
+        </div>
+
+        <!-- NovaMind Config Area -->
+        <div id="novamind-config-area" style="display: none;">
+          <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 0.6rem; line-height: 1.4;">Connect directly to your local **NovaMind** conversational Flask server running in the background.</p>
+          <div class="form-group" style="margin-bottom: 0.6rem;">
+            <label for="novamind-endpoint-input">Local API Endpoint</label>
+            <input type="text" id="novamind-endpoint-input" value="http://localhost:8000/chat" placeholder="http://localhost:8000/chat" style="width: 100%; padding: 0.75rem 0.8rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: monospace; font-size: 0.8rem; outline: none; transition: border-color 0.3s;" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0.8rem;">
+            <label for="novamind-token-input">Bearer Token (optional)</label>
+            <input type="password" id="novamind-token-input" placeholder="Bearer auth token" style="width: 100%; padding: 0.75rem 0.8rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: monospace; font-size: 0.8rem; outline: none; transition: border-color 0.3s;" />
+          </div>
+        </div>
+
+        <!-- Settings actions -->
+        <div class="settings-actions" style="display: flex; flex-direction: column; gap: 0.6rem; margin-top: auto; padding-top: 1rem;">
+          <button class="btn-primary full-width" id="save-settings-btn">Save Configuration</button>
+          <button class="btn-ghost full-width" id="clear-settings-btn">Remove Saved Keys</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chatbot-messages" id="chatbot-messages"></div>
+    <div class="quick-replies" id="quick-replies"></div>
+    <div class="chatbot-input-row">
+      <input type="text" class="chatbot-input" id="chatbot-input" placeholder="Ask me anything..." />
+      <button class="chatbot-send" id="chatbot-send" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-inner">
+    <button class="search-close" id="search-close"><i class="fa-solid fa-xmark"></i></button>
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="search-input" placeholder="Search for products..." />
+    </div>
+    <div class="search-suggestions">
+      <span>Popular:</span>
+      <a href="#" onclick="searchFor('Cashmere Coat')">Cashmere Coat</a>
+      <a href="#" onclick="searchFor('Silk Dress')">Silk Dress</a>
+      <a href="#" onclick="searchFor('Leather Bag')">Leather Bag</a>
+      <a href="#" onclick="searchFor('Wool Blazer')">Wool Blazer</a>
+    </div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+  <script src="js/animations.js"></script>
+  <script src="js/ecommerce.js"></script>
+  <script src="js/chatbot.js"></script>
+</body>
+</html>
