@@ -67,6 +67,14 @@
     <a href="#editorial" class="nav-link">Editorial</a>
   </div>
   <div class="nav-right">
+    <div class="currency-select-wrap" style="position: relative; display: flex; align-items: center; margin-right: 0.5rem;">
+      <select id="currency-select" style="background: none; border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--gold); font-family: var(--font-ui); font-size: 0.72rem; padding: 0.35rem 0.5rem; outline: none; cursor: none; font-weight: 600; text-transform: uppercase;">
+        <option value="USD" style="background: var(--bg-2); color: var(--text);">USD ($)</option>
+        <option value="EUR" style="background: var(--bg-2); color: var(--text);">EUR (€)</option>
+        <option value="INR" style="background: var(--bg-2); color: var(--text);">INR (₹)</option>
+        <option value="GBP" style="background: var(--bg-2); color: var(--text);">GBP (£)</option>
+      </select>
+    </div>
     <button class="nav-icon-btn" id="search-btn" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
     <button class="nav-icon-btn" id="wishlist-btn" aria-label="Wishlist">
       <i class="fa-regular fa-heart"></i>
@@ -355,7 +363,50 @@
       <span class="modal-category" id="modal-category"></span>
       <h2 class="modal-title" id="modal-title"></h2>
       <div class="modal-price" id="modal-price"></div>
-      <p class="modal-description" id="modal-description"></p>
+      
+      <!-- Tabs Header -->
+      <div class="modal-tabs" style="display: flex; gap: 1.5rem; margin-top: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <button class="modal-tab-btn active" id="tab-desc-btn" style="font-family: var(--font-ui); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); border-bottom: 2px solid var(--gold); padding-bottom: 0.4rem; font-weight: 600; cursor: none;">Description</button>
+        <button class="modal-tab-btn" id="tab-reviews-btn" style="font-family: var(--font-ui); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-bottom: 0.4rem; font-weight: 500; cursor: none;">Reviews (<span id="modal-reviews-count">0</span>)</button>
+      </div>
+      
+      <!-- Tab 1: Description Content -->
+      <div class="modal-tab-content" id="modal-tab-desc" style="display: block; margin-top: 1rem;">
+        <p class="modal-description" id="modal-description" style="font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem;"></p>
+      </div>
+
+      <!-- Tab 2: Reviews Content -->
+      <div class="modal-tab-content" id="modal-tab-reviews" style="display: none; margin-top: 1rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+        <!-- Summary Box -->
+        <div class="rating-summary-box" style="display: flex; align-items: center; gap: 1.2rem; background: var(--bg-3); border-radius: var(--radius); padding: 0.8rem 1rem; margin-bottom: 1rem; border: 1px solid var(--border);">
+          <div style="font-size: 2.2rem; font-family: var(--font-display); color: var(--gold); font-weight: 600;" id="avg-rating-value">5.0</div>
+          <div>
+            <div class="product-stars" id="avg-stars-list" style="display: flex; gap: 2px; color: var(--gold); font-size: 0.75rem; margin-bottom: 0.2rem;"></div>
+            <div style="font-size: 0.68rem; color: var(--muted); font-family: var(--font-ui);">Based on <span id="reviews-total-count">0</span> reviews</div>
+          </div>
+        </div>
+        
+        <!-- Reviews list -->
+        <div class="reviews-list" id="reviews-list-container" style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem;"></div>
+        
+        <!-- Write Review Form -->
+        <div style="border-top: 1px solid var(--border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.6rem;">
+          <h4 style="font-family: var(--font-ui); font-size: 0.78rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 0.2rem;">Write a Review</h4>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.2rem;">
+            <span style="color: var(--muted); font-size: 0.72rem;">Your Rating:</span>
+            <div class="review-stars-input" id="review-stars-input" style="display: flex; gap: 6px; color: var(--gold); cursor: none;">
+              <i class="fa-solid fa-star" data-rating="1"></i>
+              <i class="fa-solid fa-star" data-rating="2"></i>
+              <i class="fa-solid fa-star" data-rating="3"></i>
+              <i class="fa-solid fa-star" data-rating="4"></i>
+              <i class="fa-solid fa-star" data-rating="5"></i>
+            </div>
+          </div>
+          <input type="text" id="review-username" placeholder="Your Name" style="padding: 0.6rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: var(--font-ui); font-size: 0.78rem; outline: none; margin-bottom: 0.4rem;" />
+          <textarea id="review-comment" placeholder="Your review..." rows="3" style="padding: 0.6rem; background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--white); font-family: var(--font-body); font-size: 0.78rem; outline: none; resize: none; margin-bottom: 0.4rem;"></textarea>
+          <button id="submit-review-btn" class="btn-primary" style="align-self: flex-start; padding: 0.5rem 1.2rem; font-size: 0.72rem;" type="button">Submit Review</button>
+        </div>
+      </div>
       <div class="modal-sizes">
         <span class="size-label">Select Size</span>
         <div class="size-options" id="modal-sizes"></div>
@@ -469,6 +520,12 @@
   <!-- Step 2: Delivery -->
   <div class="checkout-step-content" id="checkout-step-2">
     <h2 class="checkout-title">Delivery Details</h2>
+    
+    <!-- Auto-Fill GPS Button -->
+    <button type="button" id="gps-autofill-btn" class="btn-ghost" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin-bottom: 1.2rem; border-color: var(--gold); color: var(--gold); font-size: 0.75rem; font-family: var(--font-ui); font-weight: 600; text-transform: uppercase; cursor: none;">
+      <i class="fa-solid fa-location-crosshairs" id="gps-icon"></i> <span id="gps-btn-text">Auto-Detect Current Location</span>
+    </button>
+
     <form class="checkout-form" id="delivery-form">
       <div class="form-row">
         <div class="form-group"><label>First Name</label><input type="text" placeholder="Arpana" id="del-fname" /></div>

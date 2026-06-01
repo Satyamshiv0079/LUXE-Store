@@ -1,6 +1,6 @@
 /* =============================================
    LUXE — js/ecommerce.js
-   State, Catalog, Cart, Wishlist, Login, Checkout
+   State, Catalog, Cart, Wishlist, Currency, Reviews, GPS, Checkout
    ============================================= */
 
 // =============================================
@@ -106,6 +106,233 @@ const PRODUCTS = [
 ];
 
 // =============================================
+// GLOBAL CURRENCY SYSTEM
+// =============================================
+let currentCurrency = localStorage.getItem("luxe_currency") || "USD";
+const CURRENCY_RATES = {
+  USD: { symbol: "$", rate: 1.0 },
+  EUR: { symbol: "€", rate: 0.92 },
+  INR: { symbol: "₹", rate: 83.5 },
+  GBP: { symbol: "£", rate: 0.79 }
+};
+
+function formatPrice(amount) {
+  const curr = CURRENCY_RATES[currentCurrency];
+  const converted = amount * curr.rate;
+  return curr.symbol + converted.toLocaleString("en-US", { 
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0 
+  });
+}
+
+function initCurrencySwitcher() {
+  const select = document.getElementById("currency-select");
+  if (!select) return;
+
+  // Load saved state
+  select.value = currentCurrency;
+
+  select.addEventListener("change", () => {
+    currentCurrency = select.value;
+    localStorage.setItem("luxe_currency", currentCurrency);
+    
+    // Re-render visual listings
+    renderCatalog();
+    updateCartUI();
+    updateWishlistUI();
+    
+    // Re-populate details modal if open
+    if (currentModal) {
+      document.getElementById("modal-price").textContent = formatPrice(currentModal.price);
+    }
+    
+    showToast(`Currency switched to ${currentCurrency}`);
+  });
+}
+
+function renderCatalog() {
+  const track = document.getElementById("h-scroll-track");
+  if (track) {
+    track.innerHTML = "";
+    PRODUCTS.forEach((p) => {
+      const card = createProductCard(p);
+      track.appendChild(card);
+    });
+  }
+}
+
+// =============================================
+// PRODUCT REVIEWS STATE & MOCKS
+// =============================================
+let localReviews = JSON.parse(localStorage.getItem("luxe_reviews") || "{}");
+let reviewRatingInput = 5;
+
+const MOCK_REVIEWS = {
+  1: [
+    { username: "Matteo V.", rating: 5, comment: "Magnificent quality! The cashmere is exceptionally soft and warm. Perfectly tailored.", date: "May 12, 2026" },
+    { username: "Sofia L.", rating: 5, comment: "An exquisite luxury masterpiece. The drape is effortless. Highly recommend Venezia cashmere.", date: "May 28, 2026" }
+  ],
+  2: [
+    { username: "Clara M.", rating: 4, comment: "Beautiful silk crepe, moves gracefully. Fit is perfect, but dry clean only makes it high maintenance.", date: "May 15, 2026" }
+  ],
+  3: [
+    { username: "Isabella R.", rating: 5, comment: "Structured perfection! The full-grain calfskin leather smells superb and hardware shines cleanly.", date: "May 24, 2026" }
+  ],
+  4: [
+    { username: "Lucas A.", rating: 5, comment: "Absolutely impeccable wool tailoring. Single-breasted fits snugly and stays professional.", date: "May 19, 2026" }
+  ],
+  5: [
+    { username: "Elena K.", rating: 5, comment: "Delightful pearl lustre silk. Concealed back placket is a touch of pure design elegance.", date: "May 29, 2026" }
+  ],
+  6: [
+    { username: "Alexander S.", rating: 4, comment: "Egyptian cotton stays exceptionally crisp. High-quality single-needle stitching.", date: "May 20, 2026" }
+  ],
+  7: [
+    { username: "Olivia D.", rating: 5, comment: "Beautiful archival printed silk scarf. Hand-rolled hems are flawlessly premium.", date: "May 26, 2026" }
+  ],
+  8: [
+    { username: "Giulia B.", rating: 5, comment: "Statement Palazzo wide leg drape, feels amazing and high-waisted wool-silk blend fits snugly.", date: "May 18, 2026" }
+  ]
+};
+
+function getProductReviews(productId) {
+  const mock = MOCK_REVIEWS[productId] || [];
+  const user = localReviews[productId] || [];
+  return [...mock, ...user];
+}
+
+function initModalTabs() {
+  const descBtn = document.getElementById("tab-desc-btn");
+  const reviewsBtn = document.getElementById("tab-reviews-btn");
+  const descContent = document.getElementById("modal-tab-desc");
+  const reviewsContent = document.getElementById("modal-tab-reviews");
+
+  if (!descBtn || !reviewsBtn) return;
+
+  descBtn.addEventListener("click", () => {
+    descBtn.classList.add("active");
+    descBtn.style.color = "var(--white)";
+    descBtn.style.borderBottom = "2px solid var(--gold)";
+    reviewsBtn.classList.remove("active");
+    reviewsBtn.style.color = "var(--muted)";
+    reviewsBtn.style.borderBottom = "none";
+
+    descContent.style.display = "block";
+    reviewsContent.style.display = "none";
+  });
+
+  reviewsBtn.addEventListener("click", () => {
+    reviewsBtn.classList.add("active");
+    reviewsBtn.style.color = "var(--white)";
+    reviewsBtn.style.borderBottom = "2px solid var(--gold)";
+    descBtn.classList.remove("active");
+    descBtn.style.color = "var(--muted)";
+    descBtn.style.borderBottom = "none";
+
+    descContent.style.display = "none";
+    reviewsContent.style.display = "block";
+  });
+}
+
+function initStarsInput() {
+  const stars = document.querySelectorAll("#review-stars-input i");
+  stars.forEach((star) => {
+    star.addEventListener("click", () => {
+      const rating = parseInt(star.dataset.rating, 10);
+      reviewRatingInput = rating;
+      updateStarsInputUI(rating);
+    });
+  });
+}
+
+function updateStarsInputUI(rating) {
+  const stars = document.querySelectorAll("#review-stars-input i");
+  stars.forEach((star) => {
+    const starVal = parseInt(star.dataset.rating, 10);
+    if (starVal <= rating) {
+      star.className = "fa-solid fa-star";
+    } else {
+      star.className = "fa-regular fa-star";
+    }
+  });
+}
+
+function renderReviewsUI(productId) {
+  const container = document.getElementById("reviews-list-container");
+  if (!container) return;
+
+  const reviews = getProductReviews(productId);
+  document.getElementById("modal-reviews-count").textContent = reviews.length;
+  document.getElementById("reviews-total-count").textContent = reviews.length;
+
+  // Calculate average rating
+  const avg = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : "5.0";
+  
+  document.getElementById("avg-rating-value").textContent = avg;
+  document.getElementById("avg-stars-list").innerHTML = getStarsHtml(parseFloat(avg));
+
+  if (reviews.length === 0) {
+    container.innerHTML = `<p style="font-size:0.78rem; color:var(--muted); font-style:italic;">No reviews yet. Be the first to review!</p>`;
+  } else {
+    container.innerHTML = reviews.map((r) => `
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:0.8rem; display:flex; flex-direction:column; gap:0.4rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-ui); font-size:0.72rem;">
+          <strong style="color:var(--white);">${r.username}</strong>
+          <span style="color:var(--muted); font-size:0.65rem;">${r.date}</span>
+        </div>
+        <div style="display:flex; gap:2px; color:var(--gold); font-size:0.65rem;">
+          ${getStarsHtml(r.rating)}
+        </div>
+        <p style="font-size:0.78rem; color:var(--text); line-height:1.5;">${r.comment}</p>
+      </div>
+    `).join("");
+  }
+}
+
+function handleReviewSubmission() {
+  const nameInput = document.getElementById("review-username");
+  const commentInput = document.getElementById("review-comment");
+  const submitBtn = document.getElementById("submit-review-btn");
+
+  if (!submitBtn || !nameInput || !commentInput || !currentModal) return;
+
+  submitBtn.addEventListener("click", () => {
+    const username = nameInput.value.trim();
+    const comment = commentInput.value.trim();
+
+    if (!username || !comment) {
+      showToast("Please enter name and comments");
+      return;
+    }
+
+    const newReview = {
+      username,
+      rating: reviewRatingInput,
+      comment,
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    };
+
+    if (!localReviews[currentModal.id]) {
+      localReviews[currentModal.id] = [];
+    }
+    localReviews[currentModal.id].push(newReview);
+    localStorage.setItem("luxe_reviews", JSON.stringify(localReviews));
+
+    // Reset inputs
+    nameInput.value = "";
+    commentInput.value = "";
+    reviewRatingInput = 5;
+    updateStarsInputUI(5);
+
+    // Re-render UI
+    renderReviewsUI(currentModal.id);
+    showToast("Review submitted successfully!");
+  });
+}
+
+// =============================================
 // CART SYSTEM
 // =============================================
 let cart = [];
@@ -139,8 +366,7 @@ function updateCartUI() {
 
   document.getElementById("cart-count").textContent = count;
   document.getElementById("cart-header-count").textContent = `(${count})`;
-  document.getElementById("cart-subtotal").textContent =
-    "$" + total.toLocaleString("en-US", { minimumFractionDigits: 2 });
+  document.getElementById("cart-subtotal").textContent = formatPrice(total);
 
   const itemsContainer = document.getElementById("cart-items");
   const footer = document.getElementById("cart-footer");
@@ -164,7 +390,7 @@ function updateCartUI() {
         <div class="cart-item-details">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-meta">Size: ${item.size} · Qty: ${item.qty}</div>
-          <div class="cart-item-price">$${(item.price * item.qty).toLocaleString()}</div>
+          <div class="cart-item-price">${formatPrice(item.price * item.qty)}</div>
         </div>
         <button class="cart-item-remove" onclick="removeFromCart(${item.id})">
           <i class="fa-solid fa-xmark"></i>
@@ -207,7 +433,7 @@ function createProductCard(product) {
     ? `<span class="product-badge ${product.badge}">${product.badge.toUpperCase()}</span>`
     : "";
   const oldPriceHtml = product.oldPrice
-    ? `<span class="product-price-old">$${product.oldPrice.toLocaleString()}</span>`
+    ? `<span class="product-price-old">${formatPrice(product.oldPrice)}</span>`
     : "";
 
   card.innerHTML = `
@@ -229,7 +455,7 @@ function createProductCard(product) {
       <h3 class="product-name">${product.name}</h3>
       <p class="product-desc">${product.description.slice(0, 80)}...</p>
       <div class="product-price-row">
-        <span class="product-price">$${product.price.toLocaleString()}</span>
+        <span class="product-price">${formatPrice(product.price)}</span>
         ${oldPriceHtml}
       </div>
     </div>
@@ -270,8 +496,12 @@ function openModal(productId) {
 
   document.getElementById("modal-category").textContent = product.category;
   document.getElementById("modal-title").textContent = product.name;
-  document.getElementById("modal-price").textContent =
-    "$" + product.price.toLocaleString();
+  document.getElementById("modal-price").textContent = formatPrice(product.price);
+  
+  // Tab resets
+  const descBtn = document.getElementById("tab-desc-btn");
+  if (descBtn) descBtn.click(); // Reset tab to Description
+
   document.getElementById("modal-description").textContent = product.description;
   document.getElementById("modal-img").style.backgroundImage = `url('${product.img}')`;
   document.getElementById("modal-img").style.backgroundSize = "cover";
@@ -284,6 +514,9 @@ function openModal(productId) {
         `<button class="size-btn ${i === 1 ? "selected" : ""}" onclick="selectSize(this, '${s}')">${s}</button>`
     )
     .join("");
+
+  // Render Reviews DB
+  renderReviewsUI(product.id);
 
   document.getElementById("modal-overlay").classList.add("open");
   document.getElementById("product-modal").classList.add("open");
@@ -362,7 +595,7 @@ function updateWishlistUI() {
         <div class="wishlist-item-img" style="background-image:url('${p.img}'); background-size:cover; background-position:center;"></div>
         <div class="wishlist-item-details">
           <div class="wishlist-item-name">${p.name}</div>
-          <div class="wishlist-item-price">$${p.price.toLocaleString()}</div>
+          <div class="wishlist-item-price">${formatPrice(p.price)}</div>
           <div class="wishlist-item-actions">
             <button class="wishlist-add-cart" onclick="addToCart(${p.id}); showToast('${p.name} added to cart');">Add to Cart</button>
           </div>
@@ -578,7 +811,7 @@ function initSearch() {
             <div class="search-result-img" style="background-image: url('${p.img}'); background-size: cover; background-position: center;"></div>
             <div class="search-result-info">
               <div class="search-result-name">${p.name}</div>
-              <div class="search-result-price">$${p.price.toLocaleString()}</div>
+              <div class="search-result-price">${formatPrice(p.price)}</div>
             </div>
           </div>`
           )
@@ -610,6 +843,8 @@ function initNewsletter() {
 // 4-STEP CHECKOUT PROCESSOR
 // =============================================
 let currentCheckoutStep = 1;
+let activeDiscount = 0;
+let activePromoCode = "";
 
 window.goCheckoutStep = function (step) {
   // Mark old step done
@@ -650,9 +885,6 @@ window.closeCheckout = function () {
   document.getElementById("checkout-step-1").classList.add("active");
 };
 
-let activeDiscount = 0;
-let activePromoCode = "";
-
 function openCheckout() {
   // Reset promo state on checkout open
   activeDiscount = 0;
@@ -671,12 +903,12 @@ function openCheckout() {
         <div class="checkout-item-name">${item.name}</div>
         <div class="checkout-item-meta">Size: ${item.size} · Qty: ${item.qty}</div>
       </div>
-      <div class="checkout-item-price">$${(item.price * item.qty).toLocaleString()}</div>
+      <div class="checkout-item-price">${formatPrice(item.price * item.qty)}</div>
     </div>`).join("");
 
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  document.getElementById("co-subtotal").textContent = "$" + total.toLocaleString("en-US", { minimumFractionDigits: 2 });
-  document.getElementById("co-total").textContent = "$" + total.toLocaleString("en-US", { minimumFractionDigits: 2 });
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  document.getElementById("co-subtotal").textContent = formatPrice(subtotal);
+  document.getElementById("co-total").textContent = formatPrice(subtotal);
 
   closeCart();
   document.getElementById("checkout-overlay").classList.add("open");
@@ -715,14 +947,56 @@ function applyPromoCode() {
 
   if (discountRow && discountCodeSpan && discountValueSpan && totalSpan) {
     discountCodeSpan.textContent = activePromoCode;
-    discountValueSpan.textContent = "-$" + activeDiscount.toLocaleString("en-US", { minimumFractionDigits: 2 });
+    discountValueSpan.textContent = "-" + formatPrice(activeDiscount);
     discountRow.style.display = "flex";
 
     const finalTotal = subtotal - activeDiscount;
-    totalSpan.textContent = "$" + finalTotal.toLocaleString("en-US", { minimumFractionDigits: 2 });
+    totalSpan.textContent = formatPrice(finalTotal);
 
-    showToast(`Code ${activePromoCode} applied! Saved $${activeDiscount.toLocaleString()}`);
+    showToast(`Code ${activePromoCode} applied! Saved ${formatPrice(activeDiscount)}`);
   }
+}
+
+// =============================================
+// MOCK GPS LOCATION AUTO-DETECT
+// =============================================
+function initGpsAutofill() {
+  const gpsBtn = document.getElementById("gps-autofill-btn");
+  const gpsIcon = document.getElementById("gps-icon");
+  const btnText = document.getElementById("gps-btn-text");
+
+  if (!gpsBtn || !gpsIcon || !btnText) return;
+
+  gpsBtn.addEventListener("click", () => {
+    // Disable and trigger high-tech loading state
+    gpsBtn.style.pointerEvents = "none";
+    gpsBtn.style.opacity = "0.7";
+    btnText.textContent = "Detecting Geolocation...";
+    gpsIcon.className = "fa-solid fa-location-crosshairs fa-spin";
+
+    setTimeout(() => {
+      // Pre-fill delivery details with premium mock Milan district address
+      const addr1 = document.getElementById("del-addr1");
+      const addr2 = document.getElementById("del-addr2");
+      const city = document.getElementById("del-city");
+      const pin = document.getElementById("del-pin");
+      const phone = document.getElementById("del-phone");
+
+      if (addr1) addr1.value = "74/A Milan Corso Suite";
+      if (addr2) addr2.value = "Atelier Fashion District";
+      if (city) city.value = "Milan";
+      if (pin) pin.value = "20121";
+      if (phone) phone.value = "+39 02 8127 9400";
+
+      // Reset loading states
+      gpsBtn.style.pointerEvents = "all";
+      gpsBtn.style.opacity = "1";
+      btnText.textContent = "Auto-Detect Current Location";
+      gpsIcon.className = "fa-solid fa-location-crosshairs";
+
+      showToast("Detected Location: Milan, Italy 🇮🇹");
+    }, 1200);
+  });
 }
 
 function initPaymentOptions() {
@@ -758,6 +1032,17 @@ function initPaymentOptions() {
 // DIALOG & DRAWER EVENT LISTENERS
 // =============================================
 function initEventListeners() {
+  // Currency Switcher
+  initCurrencySwitcher();
+
+  // Modal Review Tabs & Review Rating Input
+  initModalTabs();
+  initStarsInput();
+  handleReviewSubmission();
+
+  // GPS Auto-detect Setup
+  initGpsAutofill();
+
   // Checkout
   document.getElementById("checkout-btn")?.addEventListener("click", openCheckout);
   document.getElementById("checkout-close")?.addEventListener("click", closeCheckout);
