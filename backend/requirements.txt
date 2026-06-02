@@ -1,0 +1,13 @@
+flask>=3.0
+flask-cors>=4.0
+python-dotenv>=1.0
+gunicorn>=21.0
+groq>=0.9
+requests>=2.31
+colorama>=0.4
+
+supabase
+postgrest-py
+
+gunicorn
+eventlet
