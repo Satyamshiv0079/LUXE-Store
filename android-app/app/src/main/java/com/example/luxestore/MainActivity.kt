@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         webSettings.allowFileAccess = true
         webSettings.allowContentAccess = true
 
-        webView.loadUrl("file:///android_asset/index.html")
+        webView.loadUrl("https://luxe-store-hd8wpl06d-satyamshiv0079s-projects.vercel.app/")
     }
 
     override fun onBackPressed() {
