@@ -156,7 +156,7 @@ async function callGeminiAPI(userMessage) {
 
 // 🧠 Query local NovaMind Chatbot API
 async function callNovaMindAPI(userMessage) {
-  const endpoint = localStorage.getItem("NOVAMIND_ENDPOINT") || "http://localhost:8000/chat";
+  const endpoint = localStorage.getItem("NOVAMIND_ENDPOINT") || "https://luxe-store-ev96.onrender.com/chat";
   const token = localStorage.getItem("NOVAMIND_TOKEN") || "";
   let sessionId = localStorage.getItem("NOVAMIND_SESSION_ID") || "";
 
@@ -238,7 +238,7 @@ function initChatbotSettings() {
   const savedGeminiKey = localStorage.getItem("GEMINI_API_KEY") || "";
   if (geminiInput) geminiInput.value = savedGeminiKey;
 
-  const savedEndpoint = localStorage.getItem("NOVAMIND_ENDPOINT") || "http://localhost:8000/chat";
+  const savedEndpoint = localStorage.getItem("NOVAMIND_ENDPOINT") || "https://luxe-store-ev96.onrender.com/chat";
   if (endpointInput) endpointInput.value = savedEndpoint;
 
   const savedToken = localStorage.getItem("NOVAMIND_TOKEN") || "";
@@ -300,7 +300,7 @@ function initChatbotSettings() {
       clearMessages();
       addBotMessage("✨ **Live Gemini AI Mode Activated!**\n\nI am now connected directly to Google's **Gemini 1.5 Flash** model. Ask me anything, or let me manage your shopping cart for you! 🛍️");
     } else {
-      const endpoint = endpointInput ? endpointInput.value.trim() : "http://localhost:8000/chat";
+      const endpoint = endpointInput ? endpointInput.value.trim() : "https://luxe-store-ev96.onrender.com/chat";
       const token = tokenInput ? tokenInput.value.trim() : "";
       if (!endpoint) {
         showToast("Please enter local server endpoint");
@@ -368,7 +368,7 @@ function initChatbot() {
 
   // Socket.IO Init for Real-Time Streaming
   if (typeof io !== 'undefined') {
-    socket = io("http://localhost:8000");
+    socket = io("https://luxe-store-ev96.onrender.com");
     
     socket.on('chat_start', (data) => {
       removeTypingIndicator();

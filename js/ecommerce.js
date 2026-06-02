@@ -729,7 +729,7 @@ async function toggleWishlist(productId) {
   if (currentUser) {
       try {
           const token = localStorage.getItem("luxe_auth_token") || "";
-          await fetch(`http://localhost:8000/auth/wishlist?email=${encodeURIComponent(currentUser.email)}`, {
+          await fetch(`https://luxe-store-ev96.onrender.com/auth/wishlist?email=${encodeURIComponent(currentUser.email)}`, {
               method: "POST",
               headers: { 
                   "Content-Type": "application/json",
@@ -918,7 +918,7 @@ function initLogin() {
     const password = document.getElementById("signin-password").value;
     
     try {
-        const res = await fetch("http://localhost:8000/auth/login", {
+        const res = await fetch("https://luxe-store-ev96.onrender.com/auth/login", {
             method: "POST", headers: {"Content-Type": "application/json"},
             body: JSON.stringify({email, password})
         });
@@ -934,7 +934,7 @@ function initLogin() {
             
             // Fetch wishlist
             try {
-                const wRes = await fetch(`http://localhost:8000/auth/wishlist?email=${encodeURIComponent(currentUser.email)}`, {
+                const wRes = await fetch(`https://luxe-store-ev96.onrender.com/auth/wishlist?email=${encodeURIComponent(currentUser.email)}`, {
                     headers: { "Authorization": data.token.startsWith("Bearer") ? data.token : `Bearer ${data.token}` }
                 });
                 const wData = await wRes.json();
@@ -961,7 +961,7 @@ function initLogin() {
     const password = document.getElementById("signup-password").value;
     
     try {
-        const res = await fetch("http://localhost:8000/auth/register", {
+        const res = await fetch("https://luxe-store-ev96.onrender.com/auth/register", {
             method: "POST", headers: {"Content-Type": "application/json"},
             body: JSON.stringify({email, password, first_name: fname, last_name: lname})
         });
@@ -987,7 +987,7 @@ async function loadVIPOrders() {
     
     try {
         const token = localStorage.getItem("luxe_auth_token") || "";
-        const res = await fetch(`http://localhost:8000/auth/orders?email=${encodeURIComponent(currentUser.email)}`, {
+        const res = await fetch(`https://luxe-store-ev96.onrender.com/auth/orders?email=${encodeURIComponent(currentUser.email)}`, {
             headers: { "Authorization": token.startsWith("Bearer") ? token : `Bearer ${token}` }
         });
         const data = await res.json();
@@ -1001,7 +1001,7 @@ async function loadVIPOrders() {
                     <div style="font-size:0.75rem; color:var(--muted);">ETA: ${o.eta}</div>
                     ${o.details && o.details.subtotal ? `<div style="font-size:0.75rem; color:var(--white); margin-top:0.4rem;">Total: ${formatPrice(o.details.subtotal)}</div>` : ''}
                     <div style="margin-top:0.8rem;">
-                        <a href="http://localhost:8000/download/invoice/${o.order_id}" target="_blank" style="font-size:0.7rem; color:var(--gold); border: 1px solid var(--gold); padding: 0.3rem 0.6rem; border-radius: 5px; text-decoration: none;">Download PDF Invoice <i class="fa-solid fa-download"></i></a>
+                        <a href="https://luxe-store-ev96.onrender.com/download/invoice/${o.order_id}" target="_blank" style="font-size:0.7rem; color:var(--gold); border: 1px solid var(--gold); padding: 0.3rem 0.6rem; border-radius: 5px; text-decoration: none;">Download PDF Invoice <i class="fa-solid fa-download"></i></a>
                     </div>
                 </div>
             `).join("");
@@ -1056,7 +1056,7 @@ async function loadAdminData() {
     
     // Load Orders
     try {
-        const res = await fetch("http://localhost:8000/admin/orders", { headers });
+        const res = await fetch("https://luxe-store-ev96.onrender.com/admin/orders", { headers });
         const data = await res.json();
         const oList = document.getElementById("admin-orders-list");
         if(data.success) {
@@ -1074,7 +1074,7 @@ async function loadAdminData() {
     
     // Load Users
     try {
-        const res = await fetch("http://localhost:8000/admin/users", { headers });
+        const res = await fetch("https://luxe-store-ev96.onrender.com/admin/users", { headers });
         const data = await res.json();
         const uList = document.getElementById("admin-users-list");
         if(data.success) {
@@ -1253,7 +1253,7 @@ window.placeOrder = async function () {
   try {
     // Phase 4.2: Emulated Stripe Integration
     // Simulate creating a PaymentIntent on the backend
-    const intentRes = await fetch("http://localhost:8000/create-payment-intent", {
+    const intentRes = await fetch("https://luxe-store-ev96.onrender.com/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subtotal: cart.reduce((sum, i) => sum + i.price * i.qty, 0) })
@@ -1296,7 +1296,7 @@ window.placeOrder = async function () {
 
     const tokenInput = document.getElementById("novamind-token-input");
     const endpointInput = document.getElementById("novamind-endpoint-input");
-    let apiUrl = "http://localhost:8000/orders/new";
+    let apiUrl = "https://luxe-store-ev96.onrender.com/orders/new";
     let token = "";
     if (endpointInput && endpointInput.value) {
        try {
@@ -1653,7 +1653,7 @@ function initTranslations() {
     const textsToTranslate = Array.from(elements).map(el => el.textContent.trim());
 
     try {
-      const res = await fetch("http://localhost:8000/translate", {
+      const res = await fetch("https://luxe-store-ev96.onrender.com/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texts: textsToTranslate, target: targetLang })
