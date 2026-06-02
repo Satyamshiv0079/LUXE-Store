@@ -390,7 +390,7 @@ function initChatbot() {
 
     socket.on('chat_chunk', (data) => {
       if (currentStreamBubble) {
-        currentStreamBubble.innerHTML += data.chunk.replace(/\\n/g, "<br>");
+        currentStreamBubble.innerHTML += data.chunk.replace(/\n/g, "<br>");
         const messages = document.getElementById("chatbot-messages");
         messages.scrollTop = messages.scrollHeight;
       }
@@ -399,12 +399,12 @@ function initChatbot() {
     socket.on('chat_complete', (data) => {
       if (currentStreamBubble) {
         currentStreamBubble.classList.remove('stream-active');
-        currentStreamBubble.innerHTML = data.response.replace(/\\*\\*(.*?)\\*\\*/g, "<strong>$1</strong>").replace(/\\n/g, "<br>");
+        currentStreamBubble.innerHTML = data.response.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
         currentStreamBubble = null;
         isTyping = false;
         
         // Execute Action Tag if found
-        const actionRegex = /\\[ACTION:\\s*([A-Z_]+)(?:,\\s*ID:\\s*(\\d+))?\\]/i;
+        const actionRegex = /\[ACTION:\s*([A-Z_]+)(?:,\s*ID:\s*(\d+))?\]/i;
         const match = data.response.match(actionRegex);
         if (match) {
           executeChatbotAction(match[1].toUpperCase(), match[2] ? parseInt(match[2], 10) : null);
